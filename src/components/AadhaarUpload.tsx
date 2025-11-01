@@ -16,24 +16,66 @@ export const AadhaarUpload = ({ userId, onUploadComplete }: AadhaarUploadProps) 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error("Please upload an image file");
+    // Supported image formats including HEIC/HEIF
+    const supportedTypes = [
+      'image/jpeg',
+      'image/jpg', 
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/bmp',
+      'image/tiff',
+      'image/heic',
+      'image/heif',
+      'image/avif'
+    ];
+
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const isHeic = fileExtension === 'heic' || fileExtension === 'heif';
+    
+    // Validate file type (check both MIME type and extension for HEIC)
+    if (!file.type.startsWith('image/') && !isHeic) {
+      toast.error("Please upload an image file", {
+        description: "Supported: JPG, PNG, GIF, WebP, HEIC, TIFF, BMP, AVIF"
+      });
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
+    // Validate file size (max 10MB to accommodate HEIC files)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size must be less than 10MB");
       return;
     }
 
     setUploadedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    
+    // For HEIC files, create a data URL for preview
+    // HEIC files may not preview in all browsers, but we'll still upload them
+    try {
+      if (isHeic) {
+        // Create a FileReader to show file info
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setPreviewUrl(result);
+        };
+        reader.readAsDataURL(file);
+        
+        toast.success("HEIC file selected", {
+          description: "Preview may not be available in all browsers"
+        });
+      } else {
+        setPreviewUrl(URL.createObjectURL(file));
+      }
+    } catch (error) {
+      console.error("Error creating preview:", error);
+      // Set a placeholder or just continue without preview
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleUpload = async () => {
@@ -42,21 +84,57 @@ export const AadhaarUpload = ({ userId, onUploadComplete }: AadhaarUploadProps) 
     setUploading(true);
 
     try {
-      // Upload to Supabase storage
-      const fileExt = uploadedFile.name.split('.').pop();
+      // Get file extension, handling HEIC/HEIF specially
+      const fileExt = uploadedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${userId}-${Date.now()}.${fileExt}`;
       const filePath = `aadhaar/${fileName}`;
+
+      // Determine content type for HEIC files
+      let contentType = uploadedFile.type;
+      if (!contentType || contentType === '') {
+        // Fallback content type detection for HEIC/HEIF
+        if (fileExt === 'heic' || fileExt === 'heif') {
+          contentType = 'image/heic';
+        } else {
+          contentType = 'image/jpeg'; // default fallback
+        }
+      }
 
       const { error: uploadError } = await supabase.storage
         .from('documents')
         .upload(filePath, uploadedFile, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: contentType
         });
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
-        throw uploadError;
+        
+        // Fallback to localStorage if Supabase storage fails
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64String = reader.result as string;
+          const storageKey = `aadhaar_${userId}_${Date.now()}`;
+          
+          localStorage.setItem(storageKey, JSON.stringify({
+            fileName: uploadedFile.name,
+            fileType: contentType,
+            data: base64String,
+            uploadedAt: new Date().toISOString()
+          }));
+          
+          toast.success("Aadhaar saved locally!", {
+            description: `File: ${uploadedFile.name} (${fileExt.toUpperCase()})`
+          });
+          
+          setUploadedFile(null);
+          setPreviewUrl(null);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+          onUploadComplete?.();
+        };
+        reader.readAsDataURL(uploadedFile);
+        return;
       }
 
       // Get public URL
@@ -68,11 +146,12 @@ export const AadhaarUpload = ({ userId, onUploadComplete }: AadhaarUploadProps) 
       console.log('Aadhaar uploaded:', {
         publicUrl,
         fileName,
-        userId
+        userId,
+        fileType: contentType
       });
 
       toast.success("Aadhaar document uploaded successfully!", {
-        description: `File: ${uploadedFile.name}`
+        description: `File: ${uploadedFile.name} (${fileExt.toUpperCase()})`
       });
       
       setUploadedFile(null);
@@ -127,7 +206,7 @@ export const AadhaarUpload = ({ userId, onUploadComplete }: AadhaarUploadProps) 
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,.heic,.heif"
               onChange={handleFileSelect}
               className="hidden"
               id="aadhaar-upload"
@@ -135,7 +214,7 @@ export const AadhaarUpload = ({ userId, onUploadComplete }: AadhaarUploadProps) 
             <label htmlFor="aadhaar-upload" className="cursor-pointer">
               <Upload className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-sm md:text-base font-medium mb-1">Click to upload Aadhaar</p>
-              <p className="text-xs md:text-sm text-muted-foreground">PNG, JPG up to 5MB</p>
+              <p className="text-xs md:text-sm text-muted-foreground">All image formats supported (JPG, PNG, HEIC, etc.) up to 10MB</p>
             </label>
           </div>
         ) : (

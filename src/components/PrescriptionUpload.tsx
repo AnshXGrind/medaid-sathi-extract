@@ -32,12 +32,18 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
     };
   }, []);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error("Please upload an image file");
+    // Check for HEIC/HEIF by file extension
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const isHeic = fileExtension === 'heic' || fileExtension === 'heif';
+
+    if (!file.type.startsWith('image/') && !isHeic) {
+      toast.error("Please upload an image file", {
+        description: "Supported: JPG, PNG, GIF, WebP, HEIC, TIFF, BMP, AVIF"
+      });
       return;
     }
 
@@ -47,7 +53,27 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
     }
 
     setUploadedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    
+    // Create preview - HEIC files may not display in all browsers
+    try {
+      if (isHeic) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setPreviewUrl(result);
+        };
+        reader.readAsDataURL(file);
+        
+        toast.success("HEIC file selected", {
+          description: "Preview may not be available in all browsers"
+        });
+      } else {
+        setPreviewUrl(URL.createObjectURL(file));
+      }
+    } catch (error) {
+      console.error("Error creating preview:", error);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const startCamera = async () => {
@@ -106,16 +132,27 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
     setUploading(true);
 
     try {
-      const fileExt = uploadedFile.name.split('.').pop();
+      const fileExt = uploadedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${userId}-${Date.now()}.${fileExt}`;
       const filePath = `prescriptions/${fileName}`;
+
+      // Determine content type for HEIC files
+      let contentType = uploadedFile.type;
+      if (!contentType || contentType === '') {
+        if (fileExt === 'heic' || fileExt === 'heif') {
+          contentType = 'image/heic';
+        } else {
+          contentType = 'image/jpeg';
+        }
+      }
 
       // Try to upload to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('documents')
         .upload(filePath, uploadedFile, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: contentType
         });
 
       if (uploadError) {
@@ -126,7 +163,7 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
         reader.onload = (e) => {
           const fileData = {
             name: uploadedFile.name,
-            type: uploadedFile.type,
+            type: contentType,
             size: uploadedFile.size,
             data: e.target?.result,
             notes: notes,
@@ -140,7 +177,7 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
           localStorage.setItem('prescriptions', JSON.stringify(prescriptions));
           
           toast.success("Prescription saved locally!", {
-            description: "File stored in browser. Set up Supabase for cloud storage."
+            description: `File stored: ${uploadedFile.name} (${fileExt.toUpperCase()})`
           });
           
           setUploadedFile(null);
@@ -255,7 +292,7 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,.heic,.heif"
                 onChange={handleFileSelect}
                 className="hidden"
                 id="prescription-upload"
@@ -263,7 +300,7 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
               <label htmlFor="prescription-upload" className="cursor-pointer">
                 <Image className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-2 text-muted-foreground" />
                 <p className="text-xs md:text-sm font-medium mb-1">Upload from gallery</p>
-                <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB</p>
+                <p className="text-xs text-muted-foreground">All image formats (JPG, PNG, HEIC, etc.) up to 10MB</p>
               </label>
             </div>
 
