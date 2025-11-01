@@ -2,11 +2,16 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import HealthNews from "@/components/HealthNews";
 import GovtSchemes from "@/components/GovtSchemes";
 import SOSButton from "@/components/SOSButton";
-import { Brain, Video, MapPin, FileText, Mic, Send, Loader2, CreditCard, User as UserIcon } from "lucide-react";
+import AadhaarUpload from "@/components/AadhaarUpload";
+import PrescriptionUpload from "@/components/PrescriptionUpload";
+import HospitalFinder from "@/components/HospitalFinder";
+import AppointmentBooking from "@/components/AppointmentBooking";
+import { Brain, Video, MapPin, FileText, Mic, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -14,23 +19,23 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { maskAadhaar } from "@/lib/aadhaar";
 
+interface Consultation {
+  id: string;
+  symptoms: string;
+  status: string;
+  created_at: string;
+}
+
 const PatientDashboard = () => {
   const [symptoms, setSymptoms] = useState("");
   const [analysis, setAnalysis] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [consultations, setConsultations] = useState<any[]>([]);
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [aadhaarNumber, setAadhaarNumber] = useState<string>("");
   const [patientName, setPatientName] = useState<string>("");
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user) {
-      loadConsultations();
-      loadUserData();
-    }
-  }, [user]);
 
   const loadUserData = async () => {
     if (!user) return;
@@ -55,6 +60,14 @@ const PatientDashboard = () => {
       setConsultations(data);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      loadConsultations();
+      loadUserData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const symptomSchema = z.object({
     symptoms: z.string()
@@ -156,33 +169,60 @@ const PatientDashboard = () => {
           </Card>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-          {/* AI Symptom Analysis */}
-          <Card className="lg:col-span-2 shadow-md hover:shadow-lg transition-smooth animate-slide-up touch-manipulation">
-            <CardHeader className="p-4 md:p-6">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-1.5 md:p-2 bg-primary/10 rounded-lg">
-                  <Brain className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-base md:text-lg">AI Symptom Analysis</CardTitle>
-                  <CardDescription className="text-xs md:text-sm">Describe your symptoms in text or voice</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6">
-              <div className="relative">
-                <Textarea 
-                  placeholder="Type your symptoms here... (e.g., 'I have a headache and fever for 2 days')"
-                  className="min-h-[120px] md:min-h-[150px] pr-10 md:pr-12 text-sm md:text-base"
-                  value={symptoms}
-                  onChange={(e) => setSymptoms(e.target.value)}
-                />
-                <Button 
-                  size="icon"
-                  variant="ghost"
-                  className="absolute right-1 md:right-2 top-1 md:top-2 text-secondary hover:bg-secondary/10 h-8 w-8 md:h-10 md:w-10 touch-manipulation active:scale-95"
-                  onClick={startRecording}
+        {/* Main Tabs for Dashboard Features */}
+        <Tabs defaultValue="symptoms" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto p-1 gap-1">
+            <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
+              <Brain className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">AI</span> Analysis
+            </TabsTrigger>
+            <TabsTrigger value="appointments" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
+              <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+              Appointments
+            </TabsTrigger>
+            <TabsTrigger value="hospitals" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
+              <MapPin className="h-3 w-3 md:h-4 md:w-4" />
+              Hospitals
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
+              <Upload className="h-3 w-3 md:h-4 md:w-4" />
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="records" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
+              <FileText className="h-3 w-3 md:h-4 md:w-4" />
+              Records
+            </TabsTrigger>
+          </TabsList>
+
+          {/* AI Symptom Analysis Tab */}
+          <TabsContent value="symptoms" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+              {/* AI Symptom Analysis */}
+              <Card className="lg:col-span-2 shadow-md hover:shadow-lg transition-smooth animate-slide-up touch-manipulation">
+                <CardHeader className="p-4 md:p-6">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="p-1.5 md:p-2 bg-primary/10 rounded-lg">
+                      <Brain className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base md:text-lg">AI Symptom Analysis</CardTitle>
+                      <CardDescription className="text-xs md:text-sm">Describe your symptoms in text or voice</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6">
+                  <div className="relative">
+                    <Textarea 
+                      placeholder="Type your symptoms here... (e.g., 'I have a headache and fever for 2 days')"
+                      className="min-h-[120px] md:min-h-[150px] pr-10 md:pr-12 text-sm md:text-base"
+                      value={symptoms}
+                      onChange={(e) => setSymptoms(e.target.value)}
+                    />
+                    <Button 
+                      size="icon"
+                      variant="ghost"
+                      className="absolute right-1 md:right-2 top-1 md:top-2 text-secondary hover:bg-secondary/10 h-8 w-8 md:h-10 md:w-10 touch-manipulation active:scale-95"
+                      onClick={startRecording}
                   disabled={isRecording}
                 >
                   <Mic className={`h-4 w-4 md:h-5 md:w-5 ${isRecording ? 'text-red-500 animate-pulse' : ''}`} />
@@ -245,23 +285,6 @@ const PatientDashboard = () => {
             <Card 
               className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.98]" 
               style={{ animationDelay: '0.2s' }}
-              onClick={() => navigate("/hospitals")}
-            >
-              <CardContent className="p-4 md:p-6">
-                <div className="p-2 md:p-3 bg-secondary/10 rounded-xl w-fit mb-3 md:mb-4">
-                  <MapPin className="h-5 w-5 md:h-6 md:w-6 text-secondary" />
-                </div>
-                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">Find Hospitals</h3>
-                <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
-                  Locate nearby hospitals and pharmacies
-                </p>
-                <Button variant="outline" className="w-full h-9 md:h-10 text-sm md:text-base touch-manipulation active:scale-95">Open Map</Button>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.98]" 
-              style={{ animationDelay: '0.3s' }}
               onClick={() => navigate("/health-records")}
             >
               <CardContent className="p-4 md:p-6">
@@ -277,9 +300,34 @@ const PatientDashboard = () => {
             </Card>
           </div>
         </div>
+      </TabsContent>
 
+      {/* Appointments Tab */}
+      <TabsContent value="appointments" className="space-y-4">
+        {user && <AppointmentBooking userId={user.id} />}
+      </TabsContent>
+
+      {/* Hospitals Tab */}
+      <TabsContent value="hospitals" className="space-y-4">
+        <HospitalFinder />
+      </TabsContent>
+
+      {/* Documents Tab */}
+      <TabsContent value="documents" className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {user && (
+            <>
+              <AadhaarUpload userId={user.id} />
+              <PrescriptionUpload userId={user.id} />
+            </>
+          )}
+        </div>
+      </TabsContent>
+
+      {/* Records Tab */}
+      <TabsContent value="records" className="space-y-4">
         {/* Recent Activity */}
-        <Card className="mt-6 md:mt-8 shadow-md animate-slide-up touch-manipulation">
+        <Card className="shadow-md animate-slide-up touch-manipulation">
           <CardHeader className="p-4 md:p-6">
             <CardTitle className="text-base md:text-lg">Recent Activity</CardTitle>
             <CardDescription className="text-xs md:text-sm">Your latest health checkups and consultations</CardDescription>
@@ -313,6 +361,8 @@ const PatientDashboard = () => {
             )}
           </CardContent>
         </Card>
+      </TabsContent>
+    </Tabs>
 
         {/* Healthcare News Section */}
         <div className="mt-6 md:mt-8 animate-slide-up">

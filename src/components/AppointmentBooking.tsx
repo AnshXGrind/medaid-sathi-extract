@@ -1,0 +1,286 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Calendar, Video, Users, Loader2, Clock, IndianRupee } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
+interface Doctor {
+  id: string;
+  full_name: string;
+  specialization?: string;
+  video_rate?: number;
+  face_to_face_rate?: number;
+}
+
+interface AppointmentBookingProps {
+  userId: string;
+  onBookingComplete?: () => void;
+}
+
+export const AppointmentBooking = ({ userId, onBookingComplete }: AppointmentBookingProps) => {
+  const [loading, setLoading] = useState(false);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [selectedDoctor, setSelectedDoctor] = useState<string>("");
+  const [appointmentType, setAppointmentType] = useState<"video" | "face-to-face">("video");
+  const [appointmentDate, setAppointmentDate] = useState("");
+  const [appointmentTime, setAppointmentTime] = useState("");
+  const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    loadDoctors();
+  }, []);
+
+  const loadDoctors = async () => {
+    try {
+      // Get users with doctor role
+      const { data: doctorRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'doctor');
+
+      if (doctorRoles) {
+        // Get doctor profiles
+        const doctorIds = doctorRoles.map(d => d.user_id);
+        
+        // Mock doctor data for now
+        const mockDoctors: Doctor[] = [
+          {
+            id: "doc1",
+            full_name: "Dr. Rajesh Kumar",
+            specialization: "General Physician",
+            video_rate: 500,
+            face_to_face_rate: 800
+          },
+          {
+            id: "doc2",
+            full_name: "Dr. Priya Sharma",
+            specialization: "Cardiologist",
+            video_rate: 1000,
+            face_to_face_rate: 1500
+          },
+          {
+            id: "doc3",
+            full_name: "Dr. Amit Patel",
+            specialization: "Pediatrician",
+            video_rate: 600,
+            face_to_face_rate: 900
+          }
+        ];
+        
+        setDoctors(mockDoctors);
+      }
+    } catch (error) {
+      console.error('Error loading doctors:', error);
+    }
+  };
+
+  const getSelectedDoctorDetails = () => {
+    return doctors.find(d => d.id === selectedDoctor);
+  };
+
+  const getConsultationFee = () => {
+    const doctor = getSelectedDoctorDetails();
+    if (!doctor) return 0;
+    return appointmentType === "video" ? doctor.video_rate : doctor.face_to_face_rate;
+  };
+
+  const handleBookAppointment = async () => {
+    if (!selectedDoctor || !appointmentDate || !appointmentTime) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const appointmentDateTime = new Date(`${appointmentDate}T${appointmentTime}`);
+      const fee = getConsultationFee();
+
+      // Will be saved after migration runs
+      console.log('Booking appointment:', {
+        patient_id: userId,
+        doctor_id: selectedDoctor,
+        appointment_type: appointmentType,
+        appointment_date: appointmentDateTime.toISOString(),
+        consultation_fee: fee,
+        notes: notes
+      });
+
+      toast.success("Appointment booked successfully!");
+      
+      // Reset form
+      setSelectedDoctor("");
+      setAppointmentDate("");
+      setAppointmentTime("");
+      setNotes("");
+      onBookingComplete?.();
+    } catch (error) {
+      toast.error("Failed to book appointment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const today = new Date().toISOString().split('T')[0];
+
+  return (
+    <Card className="shadow-md touch-manipulation">
+      <CardHeader className="p-4 md:p-6">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-purple-600 dark:text-purple-300" />
+          </div>
+          <div>
+            <CardTitle className="text-base md:text-lg">Book Appointment</CardTitle>
+            <CardDescription className="text-xs md:text-sm">Schedule consultation with a doctor</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-4 md:p-6 space-y-4">
+        {/* Doctor Selection */}
+        <div className="space-y-2">
+          <Label htmlFor="doctor" className="text-xs md:text-sm">Select Doctor *</Label>
+          <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
+            <SelectTrigger id="doctor" className="h-10 text-sm">
+              <SelectValue placeholder="Choose a doctor" />
+            </SelectTrigger>
+            <SelectContent>
+              {doctors.map((doctor) => (
+                <SelectItem key={doctor.id} value={doctor.id}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>{doctor.full_name}</span>
+                    {doctor.specialization && (
+                      <Badge variant="outline" className="ml-2 text-xs">{doctor.specialization}</Badge>
+                    )}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Appointment Type */}
+        <div className="space-y-2">
+          <Label className="text-xs md:text-sm">Appointment Type *</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant={appointmentType === "video" ? "default" : "outline"}
+              onClick={() => setAppointmentType("video")}
+              className="h-auto py-3 flex-col gap-1 touch-manipulation active:scale-95"
+            >
+              <Video className="h-5 w-5" />
+              <span className="text-xs font-medium">Video Call</span>
+              {selectedDoctor && (
+                <span className="text-xs flex items-center">
+                  <IndianRupee className="h-3 w-3" />
+                  {getSelectedDoctorDetails()?.video_rate || 0}
+                </span>
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant={appointmentType === "face-to-face" ? "default" : "outline"}
+              onClick={() => setAppointmentType("face-to-face")}
+              className="h-auto py-3 flex-col gap-1 touch-manipulation active:scale-95"
+            >
+              <Users className="h-5 w-5" />
+              <span className="text-xs font-medium">In-Person</span>
+              {selectedDoctor && (
+                <span className="text-xs flex items-center">
+                  <IndianRupee className="h-3 w-3" />
+                  {getSelectedDoctorDetails()?.face_to_face_rate || 0}
+                </span>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Date Selection */}
+        <div className="space-y-2">
+          <Label htmlFor="date" className="text-xs md:text-sm">Appointment Date *</Label>
+          <input
+            type="date"
+            id="date"
+            min={today}
+            value={appointmentDate}
+            onChange={(e) => setAppointmentDate(e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
+
+        {/* Time Selection */}
+        <div className="space-y-2">
+          <Label htmlFor="time" className="text-xs md:text-sm flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Appointment Time *
+          </Label>
+          <input
+            type="time"
+            id="time"
+            value={appointmentTime}
+            onChange={(e) => setAppointmentTime(e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
+
+        {/* Notes */}
+        <div className="space-y-2">
+          <Label htmlFor="notes" className="text-xs md:text-sm">Additional Notes (Optional)</Label>
+          <Textarea
+            id="notes"
+            placeholder="Any specific concerns or requirements..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="min-h-[80px] text-sm"
+          />
+        </div>
+
+        {/* Consultation Fee */}
+        {selectedDoctor && (
+          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Consultation Fee:</span>
+              <span className="text-lg font-bold text-primary flex items-center">
+                <IndianRupee className="h-5 w-5" />
+                {getConsultationFee()}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Book Button */}
+        <Button
+          onClick={handleBookAppointment}
+          disabled={loading || !selectedDoctor || !appointmentDate || !appointmentTime}
+          className="w-full h-11 touch-manipulation active:scale-95"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Booking...
+            </>
+          ) : (
+            <>
+              <Calendar className="h-4 w-4 mr-2" />
+              Book Appointment
+            </>
+          )}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default AppointmentBooking;
