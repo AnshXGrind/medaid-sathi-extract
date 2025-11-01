@@ -78,27 +78,75 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-      });
+      // Request camera with specific constraints for better compatibility
+      const constraints = {
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
+        audio: false
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
-        setIsCameraActive(true);
+        
+        // Ensure video plays
+        try {
+          await videoRef.current.play();
+          setIsCameraActive(true);
+          toast.success("Camera activated", {
+            description: "Position your prescription in the frame"
+          });
+        } catch (playError) {
+          console.error('Video play error:', playError);
+          // Try again with user interaction
+          videoRef.current.play().catch(e => {
+            console.error('Second play attempt failed:', e);
+          });
+          setIsCameraActive(true);
+        }
       }
     } catch (error) {
       console.error('Camera access error:', error);
-      toast.error("Unable to access camera. Please check permissions.");
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      
+      if (errorMsg.includes('Permission denied') || errorMsg.includes('NotAllowedError')) {
+        toast.error("Camera permission denied", {
+          description: "Please allow camera access in your browser settings"
+        });
+      } else if (errorMsg.includes('NotFoundError') || errorMsg.includes('DevicesNotFoundError')) {
+        toast.error("No camera found", {
+          description: "Please connect a camera device"
+        });
+      } else if (errorMsg.includes('NotReadableError') || errorMsg.includes('TrackStartError')) {
+        toast.error("Camera is busy", {
+          description: "Please close other apps using the camera"
+        });
+      } else {
+        toast.error("Unable to access camera", {
+          description: "Please check permissions and try again"
+        });
+      }
     }
   };
 
   const stopCamera = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log('Camera track stopped:', track.label);
+      });
       streamRef.current = null;
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
     setIsCameraActive(false);
+    toast.info("Camera closed");
   };
 
   const capturePhoto = () => {
@@ -106,23 +154,51 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
       const video = videoRef.current;
       const canvas = canvasRef.current;
       
+      // Check if video is ready
+      if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+        toast.error("Camera not ready", {
+          description: "Please wait for the camera to load"
+        });
+        return;
+      }
+      
+      // Set canvas dimensions to match video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       
+      if (canvas.width === 0 || canvas.height === 0) {
+        toast.error("Camera not ready", {
+          description: "Please wait a moment and try again"
+        });
+        return;
+      }
+      
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(video, 0, 0);
+        // Draw the current video frame to canvas
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
+        // Convert to blob with high quality
         canvas.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], `prescription-${Date.now()}.jpg`, { type: 'image/jpeg' });
             setUploadedFile(file);
             setPreviewUrl(URL.createObjectURL(file));
             stopCamera();
-            toast.success("Photo captured!");
+            toast.success("Photo captured successfully!", {
+              description: "Review and upload your prescription"
+            });
+          } else {
+            toast.error("Failed to capture photo", {
+              description: "Please try again"
+            });
           }
-        }, 'image/jpeg', 0.9);
+        }, 'image/jpeg', 0.95);
       }
+    } else {
+      toast.error("Camera not available", {
+        description: "Please restart the camera"
+      });
     }
   };
 
@@ -263,14 +339,24 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
                 ref={videoRef}
                 autoPlay 
                 playsInline
-                className="w-full h-auto"
+                muted
+                className="w-full h-auto min-h-[300px] object-cover"
               />
               <canvas ref={canvasRef} className="hidden" />
+              
+              {/* Camera overlay with guide */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-4 border-2 border-white/50 rounded-lg" />
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-xs">
+                  Position prescription within frame
+                </div>
+              </div>
             </div>
             <div className="flex gap-2">
               <Button
                 onClick={capturePhoto}
-                className="flex-1 h-11"
+                className="flex-1 h-11 bg-primary hover:bg-primary/90"
+                size="lg"
               >
                 <Camera className="h-4 w-4 mr-2" />
                 Capture Photo
@@ -278,7 +364,7 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
               <Button
                 onClick={stopCamera}
                 variant="outline"
-                className="h-11"
+                className="h-11 px-6"
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel
