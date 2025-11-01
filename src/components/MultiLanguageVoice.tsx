@@ -104,7 +104,7 @@ export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoic
             // Update UI language to match detected language
             const langKey = Object.keys(LANGUAGE_CODES).find(
               key => LANGUAGE_CODES[key as keyof typeof LANGUAGE_CODES].code === langConfig.code
-            );
+            ) as keyof typeof LANGUAGE_CODES | undefined;
             if (langKey) {
               setLanguage(langKey);
             }

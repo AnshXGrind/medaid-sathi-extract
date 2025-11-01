@@ -74,8 +74,9 @@ export const AadhaarUpload = ({ userId, onUploadComplete }: AadhaarUploadProps) 
       setPreviewUrl(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       onUploadComplete?.();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to upload document");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload document";
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
     }

@@ -22,13 +22,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback((key: string): string => {
     const keys = key.split('.');
-    let value: any = translations[language];
+    let value: Record<string, unknown> = translations[language];
     
     for (const k of keys) {
-      value = value?.[k];
+      value = (value?.[k] as Record<string, unknown>) || {};
     }
     
-    return value || key;
+    return (typeof value === 'string' ? value : key) as string;
   }, [language]);
 
   const contextValue = useMemo(

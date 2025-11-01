@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -54,7 +54,7 @@ export const SOSButton = () => {
   ];
 
   // Mock nearby hospitals - In production, use Google Maps API or similar
-  const mockHospitals: NearbyHospital[] = [
+  const mockHospitals: NearbyHospital[] = useMemo(() => [
     {
       name: "Apollo Hospital",
       distance: "1.2 km",
@@ -76,7 +76,7 @@ export const SOSButton = () => {
       phone: "040-44774477",
       emergency: true,
     },
-  ];
+  ], []);
 
   useEffect(() => {
     if (isOpen) {
@@ -99,7 +99,7 @@ export const SOSButton = () => {
         );
       }
     }
-  }, [isOpen]);
+  }, [isOpen, mockHospitals]);
 
   const handleEmergencyCall = (number: string) => {
     window.location.href = `tel:${number}`;
