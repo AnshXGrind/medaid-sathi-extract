@@ -231,9 +231,15 @@ const PatientDashboard = () => {
       <SOSButton />
       
       <div className="container mx-auto px-3 md:px-4 pt-20 md:pt-24 pb-16 md:pb-20">
-        <div className="mb-6 md:mb-8 animate-fade-in">
-          <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">{t('patientDashboard')}</h1>
-          <p className="text-muted-foreground text-sm md:text-base">{t('welcomeBack')}! {t('yourHealthJourney')}</p>
+        <div className="mb-6 md:mb-8 animate-fade-in flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">{t('patientDashboard')}</h1>
+            <p className="text-muted-foreground text-sm md:text-base">{t('welcomeBack')}! {t('yourHealthJourney')}</p>
+          </div>
+          <VillageMode 
+            isEnabled={villageModeEnabled}
+            onToggle={setVillageModeEnabled}
+          />
         </div>
 
         {/* Patient Info Card - Aadhaar */}
@@ -263,14 +269,6 @@ const PatientDashboard = () => {
             </CardContent>
           </Card>
         )}
-
-        {/* Village Mode - Quick Access */}
-        <div className="mb-4 md:mb-6 animate-fade-in">
-          <VillageMode 
-            isEnabled={villageModeEnabled}
-            onToggle={setVillageModeEnabled}
-          />
-        </div>
 
         {/* Main Tabs for Dashboard Features */}
         <Tabs defaultValue="symptoms" className="space-y-4">
