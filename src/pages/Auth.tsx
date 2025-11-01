@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, User, Stethoscope, Loader2, CreditCard } from "lucide-react";
+import { Activity, User, Stethoscope, Loader2, CreditCard, Mail } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -29,6 +30,11 @@ const Auth = () => {
   const [medicalId, setMedicalId] = useState("");
   const [aadhaarNumber, setAadhaarNumber] = useState("");
   const [aadhaarError, setAadhaarError] = useState<string | null>(null);
+
+  // Forgot Password State
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
 
   // Redirect authenticated users
   useEffect(() => {
@@ -63,6 +69,35 @@ const Auth = () => {
     setLoading(true);
     await signIn(signInEmail, signInPassword);
     setLoading(false);
+  };
+
+  const handleForgotPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    
+    if (!resetEmail) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    setResetLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Password reset email sent! Check your inbox.");
+        setShowForgotPassword(false);
+        setResetEmail("");
+      }
+    } catch (error) {
+      toast.error("Failed to send reset email");
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   const handleSignUp = async (e: FormEvent) => {
@@ -178,6 +213,18 @@ const Auth = () => {
                         required
                       />
                     </div>
+                    
+                    <div className="flex items-center justify-end">
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="text-xs md:text-sm text-primary hover:text-primary/80 p-0 h-auto"
+                        onClick={() => setShowForgotPassword(true)}
+                      >
+                        Forgot password?
+                      </Button>
+                    </div>
+
                     <Button 
                       type="submit" 
                       className="w-full bg-primary hover:bg-primary/90 transition-smooth"
@@ -309,6 +356,69 @@ const Auth = () => {
           </Card>
         </div>
       </div>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" />
+              Reset Password
+            </DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reset-email">Email Address</Label>
+              <Input
+                id="reset-email"
+                type="email"
+                placeholder="you@example.com"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                disabled={resetLoading}
+                required
+                className="transition-smooth"
+              />
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setResetEmail("");
+                }}
+                disabled={resetLoading}
+                className="touch-manipulation active:scale-95"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={resetLoading}
+                className="bg-primary hover:bg-primary/90 touch-manipulation active:scale-95"
+              >
+                {resetLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Reset Link
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
