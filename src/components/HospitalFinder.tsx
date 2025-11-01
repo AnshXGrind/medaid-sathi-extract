@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Navigation, Phone, AlertCircle, Loader2, ExternalLink } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MapPin, Navigation, Phone, AlertCircle, Loader2, ExternalLink, Search, Clock, Car } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
@@ -14,6 +15,8 @@ interface Hospital {
   phone?: string;
   emergency_services: boolean;
   distance?: number;
+  travelTime?: number; // in minutes
+  accessibility?: 'excellent' | 'good' | 'moderate' | 'far';
 }
 
 const mockHospitals: Hospital[] = [
@@ -69,6 +72,8 @@ export const HospitalFinder = () => {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371; // Radius of the Earth in km
@@ -81,6 +86,50 @@ export const HospitalFinder = () => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
     return Math.round(distance * 10) / 10; // Round to 1 decimal
+  };
+
+  const estimateTravelTime = (distance: number): number => {
+    // Estimate travel time based on distance
+    // Assuming average speed of 30 km/h in city (includes traffic)
+    const averageSpeed = 30;
+    const timeInHours = distance / averageSpeed;
+    return Math.round(timeInHours * 60); // Convert to minutes
+  };
+
+  const getAccessibilityLevel = (distance: number): 'excellent' | 'good' | 'moderate' | 'far' => {
+    if (distance <= 5) return 'excellent';
+    if (distance <= 10) return 'good';
+    if (distance <= 20) return 'moderate';
+    return 'far';
+  };
+
+  const getAccessibilityColor = (level?: string) => {
+    switch (level) {
+      case 'excellent': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'good': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'moderate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'far': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  };
+
+  const processHospitals = (lat: number, lng: number) => {
+    const hospitalsWithDetails = mockHospitals.map(hospital => {
+      const distance = calculateDistance(lat, lng, hospital.latitude, hospital.longitude);
+      const travelTime = estimateTravelTime(distance);
+      const accessibility = getAccessibilityLevel(distance);
+      
+      return {
+        ...hospital,
+        distance,
+        travelTime,
+        accessibility
+      };
+    });
+
+    // Sort by distance (nearest first)
+    hospitalsWithDetails.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+    setHospitals(hospitalsWithDetails);
   };
 
   const getCurrentLocation = () => {
@@ -98,15 +147,7 @@ export const HospitalFinder = () => {
       (position) => {
         const { latitude, longitude } = position.coords;
         setUserLocation({ lat: latitude, lng: longitude });
-
-        // Calculate distances and sort hospitals
-        const hospitalsWithDistance = mockHospitals.map(hospital => ({
-          ...hospital,
-          distance: calculateDistance(latitude, longitude, hospital.latitude, hospital.longitude)
-        }));
-
-        hospitalsWithDistance.sort((a, b) => (a.distance || 0) - (b.distance || 0));
-        setHospitals(hospitalsWithDistance);
+        processHospitals(latitude, longitude);
         setLoading(false);
         toast.success("Location detected! Showing nearby hospitals");
       },
@@ -128,11 +169,45 @@ export const HospitalFinder = () => {
         
         setLocationError(errorMsg);
         toast.error(errorMsg);
-        
-        // Show hospitals without distance
         setHospitals(mockHospitals);
       }
     );
+  };
+
+  const searchByPincodeOrArea = async () => {
+    if (!searchQuery.trim()) {
+      toast.error("Please enter a pincode or area name");
+      return;
+    }
+
+    setSearchLoading(true);
+    setLocationError(null);
+
+    try {
+      // Use Nominatim API to geocode the search query
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)},India&limit=1`
+      );
+      
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        const latitude = parseFloat(lat);
+        const longitude = parseFloat(lon);
+        
+        setUserLocation({ lat: latitude, lng: longitude });
+        processHospitals(latitude, longitude);
+        toast.success(`Found location for "${searchQuery}"`);
+      } else {
+        toast.error("Location not found. Please try a different pincode or area.");
+      }
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      toast.error("Failed to search location. Please try again.");
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   const openGoogleMaps = (hospital: Hospital) => {
@@ -152,28 +227,62 @@ export const HospitalFinder = () => {
   return (
     <Card className="shadow-md touch-manipulation">
       <CardHeader className="p-4 md:p-6">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-              <MapPin className="h-5 w-5 md:h-6 md:w-6 text-green-600 dark:text-green-300" />
-            </div>
-            <div>
-              <CardTitle className="text-base md:text-lg">Nearby Hospitals</CardTitle>
-              <CardDescription className="text-xs md:text-sm">Find hospitals near you</CardDescription>
-            </div>
+        <div className="flex items-center gap-2 md:gap-3 mb-4">
+          <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+            <MapPin className="h-5 w-5 md:h-6 md:w-6 text-green-600 dark:text-green-300" />
           </div>
+          <div className="flex-1">
+            <CardTitle className="text-base md:text-lg">Nearby Hospitals</CardTitle>
+            <CardDescription className="text-xs md:text-sm">Find accessible hospitals near you</CardDescription>
+          </div>
+        </div>
+
+        {/* Search by Pincode or Area */}
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Enter pincode or area name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && searchByPincodeOrArea()}
+              className="text-sm"
+            />
+            <Button
+              onClick={searchByPincodeOrArea}
+              disabled={searchLoading}
+              size="sm"
+              className="h-10 px-4 touch-manipulation active:scale-95"
+            >
+              {searchLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Search className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Search</span>
+                </>
+              )}
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-px bg-border"></div>
+            <span className="text-xs text-muted-foreground">OR</span>
+            <div className="flex-1 h-px bg-border"></div>
+          </div>
+
           <Button
             onClick={getCurrentLocation}
             disabled={loading}
             size="sm"
-            className="h-8 md:h-9 text-xs md:text-sm touch-manipulation active:scale-95"
+            variant="outline"
+            className="w-full h-9 text-xs md:text-sm touch-manipulation active:scale-95"
           >
             {loading ? (
               <Loader2 className="h-4 w-4 mr-1 animate-spin" />
             ) : (
               <Navigation className="h-4 w-4 mr-1" />
             )}
-            Detect Location
+            Use My Current Location
           </Button>
         </div>
       </CardHeader>
@@ -189,7 +298,7 @@ export const HospitalFinder = () => {
           <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <p className="text-xs md:text-sm text-green-800 dark:text-green-200 flex items-center gap-2">
               <Navigation className="h-4 w-4" />
-              Location detected: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+              <span className="font-medium">Location set:</span> Showing {hospitals.length} hospitals sorted by accessibility
             </p>
           </div>
         )}
@@ -207,14 +316,27 @@ export const HospitalFinder = () => {
                     <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mt-1">{hospital.address}</p>
                   </div>
                   {hospital.emergency_services && (
-                    <Badge variant="destructive" className="text-xs">Emergency</Badge>
+                    <Badge variant="destructive" className="text-xs flex-shrink-0">Emergency</Badge>
                   )}
                 </div>
 
                 {hospital.distance !== undefined && (
-                  <p className="text-xs md:text-sm font-medium text-primary">
-                    📍 {hospital.distance} km away
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className={`text-xs ${getAccessibilityColor(hospital.accessibility)}`}>
+                      {hospital.accessibility === 'excellent' && '🟢 Very Close'}
+                      {hospital.accessibility === 'good' && '🔵 Nearby'}
+                      {hospital.accessibility === 'moderate' && '🟡 Moderate'}
+                      {hospital.accessibility === 'far' && '🟠 Far'}
+                    </Badge>
+                    <span className="text-xs md:text-sm font-medium text-primary flex items-center gap-1">
+                      <Car className="h-3 w-3" />
+                      {hospital.distance} km
+                    </span>
+                    <span className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      ~{hospital.travelTime} min
+                    </span>
+                  </div>
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-2 pt-2">
