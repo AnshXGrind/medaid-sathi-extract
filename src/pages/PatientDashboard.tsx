@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/Navbar";
+import HealthNews from "@/components/HealthNews";
 import { Brain, Video, MapPin, FileText, Mic, Send, Loader2, CreditCard, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -273,7 +274,7 @@ const PatientDashboard = () => {
         </div>
 
         {/* Recent Activity */}
-        <Card className="mt-8 shadow-md animate-slide-up" style={{ animationDelay: '0.4s' }}>
+        <Card className="mt-8 shadow-md animate-slide-up">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>Your latest health checkups and consultations</CardDescription>
@@ -307,6 +308,11 @@ const PatientDashboard = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Healthcare News Section */}
+        <div className="mt-8 animate-slide-up">
+          <HealthNews limit={3} compact={true} />
+        </div>
       </div>
     </div>
   );

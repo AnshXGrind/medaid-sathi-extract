@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import HealthNews from "@/components/HealthNews";
 import { 
   Stethoscope, 
   Brain, 
@@ -96,13 +97,28 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             {stats.map((stat, index) => (
-              <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.2}s` }}>
+              <div key={index} className="animate-fade-in" data-animation-delay={index}>
                 <div className="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
                   {stat.value}
                 </div>
                 <div className="text-lg text-muted-foreground">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Healthcare News Section */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 animate-slide-up">
+            <h2 className="text-4xl font-bold mb-4">Latest Healthcare News</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Stay informed with the latest prevention tips, health alerts, and medical breakthroughs
+            </p>
+          </div>
+          <div className="max-w-5xl mx-auto">
+            <HealthNews limit={4} showHeader={false} />
           </div>
         </div>
       </section>
