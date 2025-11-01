@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import HealthNews from "@/components/HealthNews";
 import GovtSchemes from "@/components/GovtSchemes";
 import SOSButton from "@/components/SOSButton";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Stethoscope, 
   Brain, 
@@ -20,6 +21,8 @@ import {
 } from "lucide-react";
 
 const Index = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="min-h-screen">
       <Navbar />
