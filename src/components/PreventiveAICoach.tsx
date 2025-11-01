@@ -3,48 +3,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Heart, 
-  Activity, 
-  Apple, 
-  Droplet, 
-  TrendingUp, 
-  Shield,
-  CheckCircle2,
+import {
+  Activity,
+  Apple,
+  Droplet,
   Brain,
-  ChevronRight,
-  Target,
   Send,
   Bot,
   User
-} from "lucide-react";
-import { toast } from "sonner";
-
-interface HealthMetric {
-  name: string;
-  value: number;
-  target: number;
-  status: 'good' | 'warning' | 'danger';
-  icon: typeof Activity;
-  unit: string;
-}
-
-interface DailyTip {
-  title: string;
-  description: string;
-  icon: typeof Apple;
-  action: string;
-}
-
-interface ChatMessage {
+} from "lucide-react";interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
 }
 
 export const PreventiveAICoach = () => {
-  const [showFullMetrics, setShowFullMetrics] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
@@ -53,46 +26,6 @@ export const PreventiveAICoach = () => {
     }
   ]);
   const [userInput, setUserInput] = useState("");
-
-  const healthMetrics: HealthMetric[] = [
-    {
-      name: "Daily Steps",
-      value: 6500,
-      target: 10000,
-      status: 'warning',
-      icon: Activity,
-      unit: 'steps'
-    },
-    {
-      name: "Water Intake",
-      value: 1.8,
-      target: 3.0,
-      status: 'warning',
-      icon: Droplet,
-      unit: 'L'
-    }
-  ];
-
-  const todaysTips: DailyTip[] = [
-    {
-      title: "30-Minute Morning Walk",
-      description: "Boosts immunity and cardiovascular health",
-      icon: Activity,
-      action: "Start Walk"
-    },
-    {
-      title: "Drink 8 Glasses of Water",
-      description: "Stay hydrated for optimal body functions",
-      icon: Droplet,
-      action: "Set Reminder"
-    },
-    {
-      title: "Include Whole Grains",
-      description: "Brown rice, millets for better digestion",
-      icon: Apple,
-      action: "View Recipes"
-    }
-  ];
 
   const healthScore = 75; // Overall health score out of 100
 
@@ -136,10 +69,6 @@ export const PreventiveAICoach = () => {
       
       setChatMessages(prev => [...prev, aiMessage]);
     }, 1000);
-  };
-
-  const handleGeneratePersonalPlan = () => {
-    toast.success("🎯 Generating your personalized 7-day health plan...");
   };
 
   return (
