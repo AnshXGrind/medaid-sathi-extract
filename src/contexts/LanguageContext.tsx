@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react';
 import { Language, translations } from '@/lib/translations';
 
 interface LanguageContextType {
@@ -15,12 +15,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return (stored as Language) || 'en';
   });
 
-  const setLanguage = (lang: Language) => {
+  const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('medaid-language', lang);
-  };
+  }, []);
 
-  const t = (key: string): string => {
+  const t = useCallback((key: string): string => {
     const keys = key.split('.');
     let value: any = translations[language];
     
@@ -29,10 +29,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
     
     return value || key;
-  };
+  }, [language]);
+
+  const contextValue = useMemo(
+    () => ({ language, setLanguage, t }),
+    [language, setLanguage, t]
+  );
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );
