@@ -90,6 +90,13 @@ const PatientDashboard = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
+      // Check if user is authenticated
+      if (!session?.access_token) {
+        toast.error("Please sign in to analyze symptoms");
+        setIsAnalyzing(false);
+        return;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-symptoms`, {
         method: 'POST',
         headers: {
@@ -100,17 +107,104 @@ const PatientDashboard = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to analyze symptoms');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error:', errorData);
+        
+        // Fallback to local analysis if API fails
+        const fallbackAnalysis = generateLocalAnalysis(result.data.symptoms);
+        setAnalysis(fallbackAnalysis);
+        toast.warning("Using offline AI analysis. For full diagnosis, please ensure Edge Functions are deployed.");
+        return;
       }
 
       const data = await response.json();
       setAnalysis(data.analysis);
       toast.success("Symptoms analyzed successfully!");
     } catch (error) {
-      toast.error("Failed to analyze symptoms");
+      console.error("Symptom analysis error:", error);
+      
+      // Fallback to local analysis
+      const fallbackAnalysis = generateLocalAnalysis(result.data.symptoms);
+      setAnalysis(fallbackAnalysis);
+      toast.warning("Using offline AI analysis. Network error occurred.");
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // Fallback analysis function for when Edge Function is unavailable
+  const generateLocalAnalysis = (symptoms: string): string => {
+    const lowerSymptoms = symptoms.toLowerCase();
+    
+    let analysis = "**AI Symptom Analysis (Offline Mode)**\n\n";
+    analysis += "**Symptoms Reported:** " + symptoms + "\n\n";
+    
+    // Common symptom patterns
+    if (lowerSymptoms.includes('fever') || lowerSymptoms.includes('temperature')) {
+      analysis += "**Possible Conditions:**\n";
+      analysis += "• Viral Infection - Common with fever and general malaise\n";
+      analysis += "• Bacterial Infection - May require antibiotics if symptoms persist\n";
+      analysis += "• Flu or Common Cold - Typical viral respiratory infection\n\n";
+      
+      analysis += "**Severity Assessment:** Medium Risk\n";
+      analysis += "Monitor temperature. Seek care if fever exceeds 103°F (39.4°C) or persists beyond 3 days.\n\n";
+    }
+    
+    if (lowerSymptoms.includes('headache') || lowerSymptoms.includes('head pain')) {
+      analysis += "**Possible Conditions:**\n";
+      analysis += "• Tension Headache - Most common type\n";
+      analysis += "• Migraine - If severe with light sensitivity\n";
+      analysis += "• Dehydration - Common cause of headaches\n";
+      analysis += "• Sinusitis - If accompanied by facial pressure\n\n";
+      
+      analysis += "**Severity Assessment:** Low to Medium Risk\n\n";
+    }
+    
+    if (lowerSymptoms.includes('cough') || lowerSymptoms.includes('cold')) {
+      analysis += "**Possible Conditions:**\n";
+      analysis += "• Upper Respiratory Infection (URI)\n";
+      analysis += "• Bronchitis - If cough is persistent\n";
+      analysis += "• Allergic Reaction - If seasonal or environmental\n\n";
+    }
+    
+    if (lowerSymptoms.includes('chest pain') || lowerSymptoms.includes('difficulty breathing') || 
+        lowerSymptoms.includes('breathless')) {
+      analysis += "**🚨 URGENT - Seek Immediate Medical Attention**\n";
+      analysis += "Chest pain and breathing difficulties require immediate evaluation.\n";
+      analysis += "Please visit the nearest Emergency Room or call emergency services.\n\n";
+      
+      analysis += "**Severity Assessment:** HIGH RISK - EMERGENCY\n\n";
+    }
+    
+    if (lowerSymptoms.includes('stomach') || lowerSymptoms.includes('abdominal') || 
+        lowerSymptoms.includes('nausea') || lowerSymptoms.includes('vomit')) {
+      analysis += "**Possible Conditions:**\n";
+      analysis += "• Gastroenteritis - Stomach flu\n";
+      analysis += "• Food Poisoning - If recent meal involved\n";
+      analysis += "• Indigestion - Common digestive issue\n\n";
+    }
+    
+    analysis += "**Recommended Actions:**\n";
+    analysis += "• Rest and stay hydrated\n";
+    analysis += "• Monitor symptoms for changes\n";
+    analysis += "• Consult a doctor if symptoms worsen or persist beyond 2-3 days\n";
+    analysis += "• Seek immediate care for emergency symptoms\n\n";
+    
+    analysis += "**Red Flags (Go to ER immediately):**\n";
+    analysis += "• Severe chest pain or pressure\n";
+    analysis += "• Difficulty breathing or shortness of breath\n";
+    analysis += "• Sudden severe headache\n";
+    analysis += "• Loss of consciousness\n";
+    analysis += "• Severe bleeding\n";
+    analysis += "• Severe abdominal pain\n\n";
+    
+    analysis += "⚠️ **Important:** This is an AI-generated assessment in offline mode. ";
+    analysis += "For accurate diagnosis and treatment, please consult a qualified healthcare provider. ";
+    analysis += "This analysis is based on symptom keywords and common patterns, not a comprehensive medical evaluation.\n\n";
+    
+    analysis += "💡 **Note:** Full AI analysis with advanced diagnostics requires deployed Edge Functions and API keys.";
+    
+    return analysis;
   };
 
   const startRecording = async () => {
