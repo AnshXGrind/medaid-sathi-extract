@@ -16,7 +16,9 @@ import GovernmentHealthHeatmap from "@/components/GovernmentHealthHeatmap";
 import JanAushadhiStockTracker from "@/components/JanAushadhiStockTracker";
 import SubsidyEligibilityChecker from "@/components/SubsidyEligibilityChecker";
 import VoiceVernacularAssistant from "@/components/VoiceVernacularAssistant";
-import { Brain, Video, MapPin, FileText, Mic, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Radio, Activity } from "lucide-react";
+import VillageMode from "@/components/VillageMode";
+import MultiLanguageVoice from "@/components/MultiLanguageVoice";
+import { Brain, Video, MapPin, FileText, Mic, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Radio, Activity, Wifi } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -40,6 +42,7 @@ const PatientDashboard = () => {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [aadhaarNumber, setAadhaarNumber] = useState<string>("");
   const [patientName, setPatientName] = useState<string>("");
+  const [villageModeEnabled, setVillageModeEnabled] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -212,54 +215,13 @@ const PatientDashboard = () => {
     return analysis;
   };
 
+  const handleVoiceTranscript = (text: string, language: string) => {
+    setSymptoms(prev => prev ? `${prev} ${text}` : text);
+    toast.success(`Voice recorded in ${language}!`);
+  };
+
   const startRecording = async () => {
-    try {
-      // Check if browser supports Web Speech API
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      
-      if (!SpeechRecognition) {
-        toast.error("Voice recording not supported in your browser. Please use Chrome or Edge.");
-        return;
-      }
-
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-IN'; // Indian English
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        setIsRecording(true);
-        toast.success("🎤 Listening... Describe your symptoms");
-      };
-
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setSymptoms(prev => prev ? `${prev} ${transcript}` : transcript);
-        toast.success("Voice recorded successfully!");
-      };
-
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        setIsRecording(false);
-        if (event.error === 'no-speech') {
-          toast.error("No speech detected. Please try again.");
-        } else if (event.error === 'not-allowed') {
-          toast.error("Microphone access denied. Please enable microphone permissions.");
-        } else {
-          toast.error("Could not understand. Please try again.");
-        }
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
-
-      recognition.start();
-    } catch (error) {
-      console.error('Voice recording error:', error);
-      toast.error("Microphone access denied or not available");
-      setIsRecording(false);
-    }
+    toast.info("🎤 Please use the Smart Voice Assistant in the Voice tab for multi-language support!");
   };
 
   return (
@@ -305,7 +267,7 @@ const PatientDashboard = () => {
 
         {/* Main Tabs for Dashboard Features */}
         <Tabs defaultValue="symptoms" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-10 h-auto p-1 gap-1 overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-11 h-auto p-1 gap-1 overflow-x-auto">
             <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Brain className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">{t('aiAnalysis')}</span>
@@ -320,6 +282,11 @@ const PatientDashboard = () => {
               <Radio className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">Voice</span>
               <span className="sm:hidden">🎤</span>
+            </TabsTrigger>
+            <TabsTrigger value="village" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <Wifi className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Village</span>
+              <span className="sm:hidden">🌾</span>
             </TabsTrigger>
             <TabsTrigger value="appointments" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Calendar className="h-3 w-3 md:h-4 md:w-4" />
@@ -494,7 +461,19 @@ const PatientDashboard = () => {
 
       {/* Voice Assistant Tab */}
       <TabsContent value="voice" className="space-y-4">
+        <MultiLanguageVoice 
+          onTranscript={handleVoiceTranscript}
+          isActive={true}
+        />
         <VoiceVernacularAssistant />
+      </TabsContent>
+
+      {/* Village Mode Tab */}
+      <TabsContent value="village" className="space-y-4">
+        <VillageMode 
+          isEnabled={villageModeEnabled}
+          onToggle={setVillageModeEnabled}
+        />
       </TabsContent>
 
       {/* Government Health Heatmap Tab */}
