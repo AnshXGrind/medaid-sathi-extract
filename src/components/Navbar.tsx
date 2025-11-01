@@ -4,6 +4,7 @@ import { Menu, X, Activity, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import SettingsButton from "@/components/SettingsButton";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Navbar = () => {
@@ -41,6 +42,7 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSelector />
             <SettingsButton />
             {user ? (
               <Button 
@@ -69,6 +71,7 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
+            <LanguageSelector />
             <SettingsButton />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}

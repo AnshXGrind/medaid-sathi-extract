@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Mic, 
   MicOff, 
@@ -33,6 +34,9 @@ const LANGUAGE_CODES = {
 export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoiceProps) => {
   const [isListening, setIsListening] = useState(false);
   const [detectedLanguage, setDetectedLanguage] = useState<string>('');
+  const [detectedText, setDetectedText] = useState<string>('');
+  const [detectedLangKey, setDetectedLangKey] = useState<keyof typeof LANGUAGE_CODES | null>(null);
+  const [showLanguageDialog, setShowLanguageDialog] = useState(false);
   const [transcript, setTranscript] = useState<string>('');
   const [isAutoDetecting, setIsAutoDetecting] = useState(true);
   const [currentLangCode, setCurrentLangCode] = useState<string>('en-IN');
@@ -98,15 +102,19 @@ export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoic
 
           if (confidence > 0.5) {
             setDetectedLanguage(langConfig.name);
+            setDetectedText(detectedText);
             setTranscript(detectedText);
             setCurrentLangCode(langConfig.code);
             
-            // Update UI language to match detected language
+            // Find the language key for this detected language
             const langKey = Object.keys(LANGUAGE_CODES).find(
               key => LANGUAGE_CODES[key as keyof typeof LANGUAGE_CODES].code === langConfig.code
             ) as keyof typeof LANGUAGE_CODES | undefined;
+            
             if (langKey) {
-              setLanguage(langKey);
+              setDetectedLangKey(langKey);
+              // Show dialog to confirm language change
+              setShowLanguageDialog(true);
             }
 
             onTranscript(detectedText, langConfig.code);
@@ -114,7 +122,6 @@ export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoic
             setIsAutoDetecting(false);
             
             toast.success(`🎤 Detected ${langConfig.native} (${langConfig.name})`);
-            speakResponse(`I understood your ${langConfig.name}`, langConfig.code);
           } else {
             // Confidence too low, try next language
             detectionAttempt++;
@@ -330,6 +337,52 @@ export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoic
           </div>
         </div>
       </CardContent>
+
+      {/* Language Change Confirmation Dialog */}
+      <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5" />
+              Language Detected
+            </DialogTitle>
+            <DialogDescription className="text-base pt-2">
+              We detected you're speaking in <strong>{detectedLanguage}</strong>.
+              <br /><br />
+              <div className="p-3 bg-muted rounded-md text-sm">
+                <strong>Your speech:</strong><br />
+                "{detectedText}"
+              </div>
+              <br />
+              Would you like to switch the app interface to {detectedLanguage}?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowLanguageDialog(false);
+                toast.info("Language kept as is. You can change it from the menu anytime.");
+              }}
+            >
+              Keep Current Language
+            </Button>
+            <Button
+              onClick={() => {
+                if (detectedLangKey) {
+                  setLanguage(detectedLangKey);
+                  toast.success(`✓ Switched to ${detectedLanguage}!`);
+                  const langConfig = LANGUAGE_CODES[detectedLangKey];
+                  speakResponse(`I understood your ${langConfig.name}`, langConfig.code);
+                }
+                setShowLanguageDialog(false);
+              }}
+            >
+              Yes, Switch to {detectedLanguage}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
