@@ -264,9 +264,17 @@ const PatientDashboard = () => {
           </Card>
         )}
 
+        {/* Village Mode - Quick Access */}
+        <div className="mb-4 md:mb-6 animate-fade-in">
+          <VillageMode 
+            isEnabled={villageModeEnabled}
+            onToggle={setVillageModeEnabled}
+          />
+        </div>
+
         {/* Main Tabs for Dashboard Features */}
         <Tabs defaultValue="symptoms" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-10 h-auto p-1 gap-1 overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-9 h-auto p-1 gap-1 overflow-x-auto">
             <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Brain className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">{t('aiAnalysis')}</span>
@@ -276,11 +284,6 @@ const PatientDashboard = () => {
               <Heart className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">AI Coach</span>
               <span className="sm:hidden">Coach</span>
-            </TabsTrigger>
-            <TabsTrigger value="village" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
-              <Wifi className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Village</span>
-              <span className="sm:hidden">🌾</span>
             </TabsTrigger>
             <TabsTrigger value="appointments" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Calendar className="h-3 w-3 md:h-4 md:w-4" />
@@ -448,14 +451,6 @@ const PatientDashboard = () => {
       {/* AI Coach Tab */}
       <TabsContent value="coach" className="space-y-4">
         <PreventiveAICoach />
-      </TabsContent>
-
-      {/* Village Mode Tab */}
-      <TabsContent value="village" className="space-y-4">
-        <VillageMode 
-          isEnabled={villageModeEnabled}
-          onToggle={setVillageModeEnabled}
-        />
       </TabsContent>
 
       {/* Government Health Heatmap Tab */}
