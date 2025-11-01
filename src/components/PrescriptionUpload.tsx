@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, Camera, FileText, CheckCircle, Loader2, X, Image } from "lucide-react";
@@ -17,9 +17,20 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
-  const [useCamera, setUseCamera] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Cleanup camera stream on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -37,6 +48,56 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
 
     setUploadedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
+        setIsCameraActive(true);
+      }
+    } catch (error) {
+      console.error('Camera access error:', error);
+      toast.error("Unable to access camera. Please check permissions.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `prescription-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            setUploadedFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+            stopCamera();
+            toast.success("Photo captured!");
+          }
+        }, 'image/jpeg', 0.9);
+      }
+    }
   };
 
   const handleUpload = async () => {
@@ -67,7 +128,6 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
       setPreviewUrl(null);
       setNotes("");
       if (fileInputRef.current) fileInputRef.current.value = '';
-      if (cameraInputRef.current) cameraInputRef.current.value = '';
       onUploadComplete?.();
     } catch (error) {
       toast.error("Failed to upload prescription");
@@ -80,7 +140,6 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
     setUploadedFile(null);
     setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   return (
@@ -97,7 +156,37 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
         </div>
       </CardHeader>
       <CardContent className="p-4 md:p-6 space-y-4">
-        {!previewUrl ? (
+        {isCameraActive ? (
+          /* Camera View */
+          <div className="space-y-3">
+            <div className="relative rounded-lg overflow-hidden border-2 border-primary bg-black">
+              <video 
+                ref={videoRef}
+                autoPlay 
+                playsInline
+                className="w-full h-auto"
+              />
+              <canvas ref={canvasRef} className="hidden" />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={capturePhoto}
+                className="flex-1 h-11"
+              >
+                <Camera className="h-4 w-4 mr-2" />
+                Capture Photo
+              </Button>
+              <Button
+                onClick={stopCamera}
+                variant="outline"
+                className="h-11"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : !previewUrl ? (
           <div className="space-y-3">
             {/* Upload from file */}
             <div className="border-2 border-dashed border-border rounded-lg p-4 md:p-6 text-center hover:border-primary/50 transition-smooth">
@@ -117,21 +206,13 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
             </div>
 
             {/* Capture with camera */}
-            <div className="border-2 border-dashed border-border rounded-lg p-4 md:p-6 text-center hover:border-primary/50 transition-smooth">
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileSelect}
-                className="hidden"
-                id="prescription-camera"
-              />
-              <label htmlFor="prescription-camera" className="cursor-pointer">
-                <Camera className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-xs md:text-sm font-medium mb-1">Capture with camera</p>
-                <p className="text-xs text-muted-foreground">Take a photo now</p>
-              </label>
+            <div 
+              className="border-2 border-dashed border-border rounded-lg p-4 md:p-6 text-center hover:border-primary/50 transition-smooth cursor-pointer"
+              onClick={startCamera}
+            >
+              <Camera className="h-8 w-8 md:h-10 md:w-10 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-xs md:text-sm font-medium mb-1">Capture with camera</p>
+              <p className="text-xs text-muted-foreground">Take a photo now</p>
             </div>
           </div>
         ) : (
