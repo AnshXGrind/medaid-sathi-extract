@@ -284,7 +284,7 @@ export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoic
                 disabled={!isActive}
               >
                 <Mic className="h-5 w-5 mr-2" />
-                Auto-Detect Language
+                Start Voice Recording
               </Button>
               <Button
                 variant="outline"
@@ -317,41 +317,15 @@ export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoic
           )}
         </div>
 
-        {/* Language Grid */}
-        <div>
-          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Languages className="h-4 w-4 text-primary" />
-            Or Select Your Language (अपनी भाषा चुनें)
-          </h4>
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(LANGUAGE_CODES).map(([key, lang]) => (
-              <Button
-                key={key}
-                variant={currentLangCode === lang.code ? "default" : "outline"}
-                className="h-auto py-3 flex flex-col items-start"
-                onClick={() => {
-                  setCurrentLangCode(lang.code);
-                  setLanguage(key);
-                  startListeningInLanguage(lang.code);
-                }}
-                disabled={isListening || !isActive}
-              >
-                <span className="font-semibold text-sm">{lang.native}</span>
-                <span className="text-xs opacity-80">{lang.name}</span>
-              </Button>
-            ))}
-          </div>
-        </div>
-
         {/* Info */}
         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex gap-2 text-xs text-blue-700 dark:text-blue-300">
-            <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <Languages className="h-5 w-5 flex-shrink-0 mt-0.5 text-blue-600" />
             <div className="space-y-1">
-              <p><strong>For Illiterate Users:</strong> Just speak naturally in your language</p>
-              <p>• App automatically detects which language you're speaking</p>
-              <p>• Voice responses read back information in your language</p>
-              <p>• Works with poor literacy - no reading required</p>
+              <p><strong>Auto Language Detection:</strong> Just speak naturally</p>
+              <p>• Supports 8 Indian languages (हिंदी, தமிழ், తెలుగు, ಕನ್ನಡ, മലയാളം, ગુજરાતી, ਪੰਜਾਬੀ, English)</p>
+              <p>• System automatically detects which language you're speaking</p>
+              <p>• Perfect for illiterate users - no reading required</p>
             </div>
           </div>
         </div>

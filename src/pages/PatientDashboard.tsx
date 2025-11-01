@@ -15,10 +15,9 @@ import PreventiveAICoach from "@/components/PreventiveAICoach";
 import GovernmentHealthHeatmap from "@/components/GovernmentHealthHeatmap";
 import JanAushadhiStockTracker from "@/components/JanAushadhiStockTracker";
 import SubsidyEligibilityChecker from "@/components/SubsidyEligibilityChecker";
-import VoiceVernacularAssistant from "@/components/VoiceVernacularAssistant";
 import VillageMode from "@/components/VillageMode";
 import MultiLanguageVoice from "@/components/MultiLanguageVoice";
-import { Brain, Video, MapPin, FileText, Mic, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Radio, Activity, Wifi } from "lucide-react";
+import { Brain, Video, MapPin, FileText, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Activity, Wifi } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -267,7 +266,7 @@ const PatientDashboard = () => {
 
         {/* Main Tabs for Dashboard Features */}
         <Tabs defaultValue="symptoms" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-11 h-auto p-1 gap-1 overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-10 h-auto p-1 gap-1 overflow-x-auto">
             <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Brain className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">{t('aiAnalysis')}</span>
@@ -277,11 +276,6 @@ const PatientDashboard = () => {
               <Heart className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">AI Coach</span>
               <span className="sm:hidden">Coach</span>
-            </TabsTrigger>
-            <TabsTrigger value="voice" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
-              <Radio className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Voice</span>
-              <span className="sm:hidden">🎤</span>
             </TabsTrigger>
             <TabsTrigger value="village" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Wifi className="h-3 w-3 md:h-4 md:w-4" />
@@ -326,6 +320,12 @@ const PatientDashboard = () => {
 
           {/* AI Symptom Analysis Tab */}
           <TabsContent value="symptoms" className="space-y-4">
+            {/* Voice Assistant - Now at top of AI Analysis */}
+            <MultiLanguageVoice 
+              onTranscript={handleVoiceTranscript}
+              isActive={true}
+            />
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
               {/* AI Symptom Analysis */}
               <Card className="lg:col-span-2 shadow-md hover:shadow-lg transition-smooth animate-slide-up touch-manipulation">
@@ -343,40 +343,31 @@ const PatientDashboard = () => {
                 <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6">
                   <div className="relative">
                     <Textarea 
-                      placeholder="Type your symptoms here... (e.g., 'I have a headache and fever for 2 days')"
-                      className="min-h-[120px] md:min-h-[150px] pr-10 md:pr-12 text-sm md:text-base"
+                      placeholder="Type your symptoms here... (e.g., 'I have a headache and fever for 2 days') OR use Voice Assistant above"
+                      className="min-h-[120px] md:min-h-[150px] text-sm md:text-base"
                       value={symptoms}
                       onChange={(e) => setSymptoms(e.target.value)}
                     />
+                  </div>
+                  <div className="flex gap-2">
                     <Button 
-                      size="icon"
-                      variant="ghost"
-                      className="absolute right-1 md:right-2 top-1 md:top-2 text-secondary hover:bg-secondary/10 h-8 w-8 md:h-10 md:w-10 touch-manipulation active:scale-95"
-                      onClick={startRecording}
-                  disabled={isRecording}
-                >
-                  <Mic className={`h-4 w-4 md:h-5 md:w-5 ${isRecording ? 'text-red-500 animate-pulse' : ''}`} />
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  className="flex-1 bg-primary h-10 md:h-11 text-sm md:text-base touch-manipulation active:scale-95"
-                  onClick={analyzeSymptoms}
-                  disabled={isAnalyzing}
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Analyze Symptoms
-                    </>
-                  )}
-                </Button>
-              </div>
+                      className="flex-1 bg-primary h-10 md:h-11 text-sm md:text-base touch-manipulation active:scale-95"
+                      onClick={analyzeSymptoms}
+                      disabled={isAnalyzing}
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4 mr-2" />
+                          Analyze Symptoms
+                        </>
+                      )}
+                    </Button>
+                  </div>
               
               {analysis && (
                 <div className="mt-3 md:mt-4 p-3 md:p-4 bg-muted rounded-lg border border-border">
@@ -457,15 +448,6 @@ const PatientDashboard = () => {
       {/* AI Coach Tab */}
       <TabsContent value="coach" className="space-y-4">
         <PreventiveAICoach />
-      </TabsContent>
-
-      {/* Voice Assistant Tab */}
-      <TabsContent value="voice" className="space-y-4">
-        <MultiLanguageVoice 
-          onTranscript={handleVoiceTranscript}
-          isActive={true}
-        />
-        <VoiceVernacularAssistant />
       </TabsContent>
 
       {/* Village Mode Tab */}
