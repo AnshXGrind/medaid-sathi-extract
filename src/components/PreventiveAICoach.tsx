@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -13,7 +14,10 @@ import {
   CheckCircle2,
   Brain,
   ChevronRight,
-  Target
+  Target,
+  Send,
+  Bot,
+  User
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,8 +37,22 @@ interface DailyTip {
   action: string;
 }
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 export const PreventiveAICoach = () => {
   const [showFullMetrics, setShowFullMetrics] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      role: 'assistant',
+      content: "👋 Hello! I'm your AI Health Coach. I can help you with health tips, diet advice, exercise plans, and answer your wellness questions. How can I assist you today?",
+      timestamp: new Date()
+    }
+  ]);
+  const [userInput, setUserInput] = useState("");
 
   const healthMetrics: HealthMetric[] = [
     {
@@ -78,162 +96,156 @@ export const PreventiveAICoach = () => {
 
   const healthScore = 75; // Overall health score out of 100
 
+  const handleSendMessage = () => {
+    if (!userInput.trim()) return;
+    
+    // Add user message
+    const newUserMessage: ChatMessage = {
+      role: 'user',
+      content: userInput,
+      timestamp: new Date()
+    };
+    
+    setChatMessages(prev => [...prev, newUserMessage]);
+    setUserInput("");
+    
+    // Simulate AI response
+    setTimeout(() => {
+      let response = "";
+      const lowerInput = userInput.toLowerCase();
+      
+      if (lowerInput.includes('diet') || lowerInput.includes('food') || lowerInput.includes('eat')) {
+        response = "🥗 For a healthy diet, I recommend:\n\n• Include more vegetables and fruits (5 servings/day)\n• Choose whole grains over refined grains\n• Drink plenty of water (8-10 glasses)\n• Limit processed foods and sugar\n• Include protein in every meal\n\nWould you like a personalized meal plan?";
+      } else if (lowerInput.includes('exercise') || lowerInput.includes('workout') || lowerInput.includes('fitness')) {
+        response = "💪 Exercise recommendations:\n\n• Start with 30 minutes daily walking\n• Include strength training 2-3 times/week\n• Try yoga for flexibility (15 min/day)\n• Take stairs instead of elevator\n• Stay consistent - exercise at the same time daily\n\nShall I create a workout schedule for you?";
+      } else if (lowerInput.includes('sleep') || lowerInput.includes('tired') || lowerInput.includes('rest')) {
+        response = "😴 Better sleep tips:\n\n• Maintain consistent sleep schedule (7-8 hours)\n• Avoid screens 1 hour before bed\n• Keep bedroom dark and cool\n• No caffeine after 4 PM\n• Try relaxation exercises before bed\n\nGood sleep is crucial for health!";
+      } else if (lowerInput.includes('stress') || lowerInput.includes('anxiety') || lowerInput.includes('mental')) {
+        response = "🧘 Stress management tips:\n\n• Practice deep breathing exercises\n• Try 10 minutes daily meditation\n• Regular physical activity\n• Connect with friends and family\n• Take short breaks during work\n• Consider professional help if needed\n\nYour mental health matters!";
+      } else if (lowerInput.includes('water') || lowerInput.includes('hydration')) {
+        response = "💧 Hydration is vital!\n\n• Drink 8-10 glasses (2.5-3L) daily\n• Start your day with a glass of water\n• Drink before you feel thirsty\n• Increase intake during exercise\n• Limit sugary drinks\n\nStay hydrated for better health!";
+      } else {
+        response = `I understand you're asking about "${userInput}". Here are some general health tips:\n\n• Maintain balanced diet with variety\n• Exercise regularly (30 min/day)\n• Get adequate sleep (7-8 hours)\n• Stay hydrated\n• Regular health checkups\n• Manage stress effectively\n\nCould you be more specific about what you'd like to know? I can help with diet, exercise, sleep, or stress management!`;
+      }
+      
+      const aiMessage: ChatMessage = {
+        role: 'assistant',
+        content: response,
+        timestamp: new Date()
+      };
+      
+      setChatMessages(prev => [...prev, aiMessage]);
+    }, 1000);
+  };
+
   const handleGeneratePersonalPlan = () => {
     toast.success("🎯 Generating your personalized 7-day health plan...");
   };
 
   return (
-    <Card className="shadow-md">
-      <CardHeader className="p-4 md:p-6">
+    <Card className="shadow-md h-full flex flex-col">
+      <CardHeader className="p-4 md:p-6 border-b">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-primary to-secondary rounded-lg">
-              <Heart className="h-6 w-6 text-white" />
+              <Bot className="h-6 w-6 text-white" />
             </div>
             <div>
-              <CardTitle className="text-base md:text-lg">AI Health Coach</CardTitle>
-              <CardDescription className="text-xs md:text-sm">
-                Your daily wellness companion
+              <CardTitle className="text-base md:text-lg">AI Health Chatbot</CardTitle>
+              <CardDescription className="text-xs md:text-sm flex items-center gap-1">
+                <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></span>
+                Online - Ask me anything
               </CardDescription>
             </div>
           </div>
+          <Badge className="bg-gradient-to-r from-primary to-secondary text-white">
+            Score: {healthScore}/100
+          </Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="p-4 md:p-6 space-y-4">
-        {/* Health Score Card */}
-        <div className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Your Health Score</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-primary">{healthScore}</span>
-                <span className="text-sm text-muted-foreground">/100</span>
-              </div>
-            </div>
-            <div className="p-3 bg-white dark:bg-gray-800 rounded-full">
-              <Target className="h-8 w-8 text-primary" />
-            </div>
-          </div>
-          <Progress value={healthScore} className="h-2 mb-2" />
-          <p className="text-xs text-muted-foreground">
-            {healthScore >= 80 ? '🎉 Excellent! Keep it up!' : 
-             healthScore >= 60 ? '💪 Good progress! Room for improvement.' : 
-             '⚠️ Needs attention. Let\'s improve together!'}
-          </p>
-        </div>
-
-        {/* Quick Health Metrics */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-sm flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              Today's Goals
-            </h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={() => setShowFullMetrics(!showFullMetrics)}
+      <CardContent className="p-4 md:p-6 space-y-4 flex-1 flex flex-col">
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto space-y-4 min-h-[400px] max-h-[500px] pr-2">
+          {chatMessages.map((message, index) => (
+            <div 
+              key={index}
+              className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              {showFullMetrics ? 'Show Less' : 'View All'}
-            </Button>
-          </div>
-          
-          <div className="space-y-3">
-            {healthMetrics.slice(0, showFullMetrics ? undefined : 2).map((metric, index) => {
-              const Icon = metric.icon;
-              const percentage = Math.min((metric.value / metric.target) * 100, 100);
-              
-              return (
-                <div key={index} className="p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">{metric.name}</span>
-                    </div>
-                    <span className="text-sm font-semibold">
-                      {metric.value} / {metric.target} {metric.unit}
-                    </span>
-                  </div>
-                  <Progress value={percentage} className="h-2" />
+              {message.role === 'assistant' && (
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                  <Bot className="h-4 w-4 text-white" />
                 </div>
-              );
-            })}
-          </div>
+              )}
+              <div className={`max-w-[80%] ${
+                message.role === 'user' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted'
+              } rounded-lg p-3`}>
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <p className="text-xs opacity-70 mt-1">
+                  {message.timestamp.toLocaleTimeString('en-IN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </p>
+              </div>
+              {message.role === 'user' && (
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                  <User className="h-4 w-4 text-primary-foreground" />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
-        {/* Today's Tips - Simplified */}
-        <div>
-          <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-            <Brain className="h-4 w-4 text-primary" />
-            AI Recommendations
-          </h3>
-          
-          <div className="space-y-2">
-            {todaysTips.map((tip, index) => {
-              const Icon = tip.icon;
-              return (
-                <div 
-                  key={index}
-                  className="p-3 border border-border rounded-lg hover:shadow-sm transition-smooth group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                      <Icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm mb-0.5">{tip.title}</h4>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{tip.description}</p>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      variant="ghost"
-                      className="h-8 px-3 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => toast.success(`Starting: ${tip.title}`)}
-                    >
-                      {tip.action}
-                      <ChevronRight className="h-3 w-3 ml-1" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className="flex gap-2">
-          <Button 
-            onClick={handleGeneratePersonalPlan}
-            className="flex-1 h-10"
-          >
-            <Brain className="h-4 w-4 mr-2" />
-            Generate 7-Day Plan
-          </Button>
-          <Button 
+        {/* Quick Action Buttons */}
+        <div className="flex flex-wrap gap-2">
+          <Button
             variant="outline"
-            className="h-10 px-4"
-            onClick={() => toast.info("Opening progress tracker...")}
+            size="sm"
+            onClick={() => setUserInput("What should I eat for better health?")}
+            className="text-xs"
           >
-            <TrendingUp className="h-4 w-4" />
+            <Apple className="h-3 w-3 mr-1" />
+            Diet Tips
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setUserInput("How can I exercise daily?")}
+            className="text-xs"
+          >
+            <Activity className="h-3 w-3 mr-1" />
+            Exercise
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setUserInput("How to manage stress?")}
+            className="text-xs"
+          >
+            <Brain className="h-3 w-3 mr-1" />
+            Stress
           </Button>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-2 p-3 bg-muted/30 rounded-lg">
-          <div className="text-center">
-            <p className="text-lg font-bold text-green-600">22</p>
-            <p className="text-xs text-muted-foreground">Day Streak</p>
-          </div>
-          <div className="text-center border-x border-border">
-            <p className="text-lg font-bold text-blue-600">85%</p>
-            <p className="text-xs text-muted-foreground">Goals Met</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-bold text-purple-600">12</p>
-            <p className="text-xs text-muted-foreground">Achievements</p>
-          </div>
+        {/* Input Area */}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Ask about diet, exercise, sleep, health tips..."
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            className="flex-1"
+          />
+          <Button 
+            onClick={handleSendMessage}
+            disabled={!userInput.trim()}
+            className="px-4"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -241,3 +253,4 @@ export const PreventiveAICoach = () => {
 };
 
 export default PreventiveAICoach;
+

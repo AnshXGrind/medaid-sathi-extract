@@ -17,7 +17,7 @@ import JanAushadhiStockTracker from "@/components/JanAushadhiStockTracker";
 import SubsidyEligibilityChecker from "@/components/SubsidyEligibilityChecker";
 import VillageMode from "@/components/VillageMode";
 import MultiLanguageVoice from "@/components/MultiLanguageVoice";
-import { Brain, Video, MapPin, FileText, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Activity, Wifi } from "lucide-react";
+import { Brain, Video, MapPin, FileText, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Activity, Wifi, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -146,74 +146,213 @@ const PatientDashboard = () => {
   // Fallback analysis function for when Edge Function is unavailable
   const generateLocalAnalysis = (symptoms: string): string => {
     const lowerSymptoms = symptoms.toLowerCase();
+    const today = new Date().toLocaleDateString('en-IN', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
     
-    let analysis = "**✓ AI Symptom Analysis - Ready**\n\n";
-    analysis += "**Your Symptoms:** " + symptoms + "\n\n";
+    let analysis = `╔════════════════════════════════════════════════════════════╗
+║           MedAid AI - SYMPTOM ANALYSIS REPORT              ║
+║                  Generated: ${today.padEnd(28, ' ')}║
+╚════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 PATIENT COMPLAINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${symptoms}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 AI PRELIMINARY ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
     
-    // Common symptom patterns
+    let severityLevel = "LOW";
+    let severityEmoji = "🟢";
+    const conditions: string[] = [];
+    const recommendations: string[] = [];
+    let redFlags = false;
+    
+    // Analyze symptoms and determine conditions
     if (lowerSymptoms.includes('fever') || lowerSymptoms.includes('temperature')) {
-      analysis += "**Possible Conditions:**\n";
-      analysis += "• Viral Infection - Common with fever and general malaise\n";
-      analysis += "• Bacterial Infection - May require antibiotics if symptoms persist\n";
-      analysis += "• Flu or Common Cold - Typical viral respiratory infection\n\n";
-      
-      analysis += "**Severity Assessment:** Medium Risk\n";
-      analysis += "Monitor temperature. Seek care if fever exceeds 103°F (39.4°C) or persists beyond 3 days.\n\n";
+      severityLevel = "MEDIUM";
+      severityEmoji = "🟡";
+      conditions.push(
+        "• Viral Infection (Most Common)\n  - Usually self-limiting, lasts 3-7 days\n  - Body's immune response to virus",
+        "• Bacterial Infection\n  - May require antibiotics if persistent\n  - Consult doctor if fever >3 days",
+        "• Influenza (Flu)\n  - Typical viral respiratory infection\n  - Rest and hydration important"
+      );
+      recommendations.push(
+        "• Monitor temperature every 4-6 hours",
+        "• Stay hydrated (8-10 glasses water/day)",
+        "• Rest adequately (7-8 hours sleep)",
+        "• Paracetamol for fever >100°F (as per dosage)",
+        "• Sponge with lukewarm water if fever high"
+      );
     }
     
     if (lowerSymptoms.includes('headache') || lowerSymptoms.includes('head pain')) {
-      analysis += "**Possible Conditions:**\n";
-      analysis += "• Tension Headache - Most common type\n";
-      analysis += "• Migraine - If severe with light sensitivity\n";
-      analysis += "• Dehydration - Common cause of headaches\n";
-      analysis += "• Sinusitis - If accompanied by facial pressure\n\n";
-      
-      analysis += "**Severity Assessment:** Low to Medium Risk\n\n";
+      conditions.push(
+        "• Tension Headache (Most Common)\n  - Caused by stress, poor posture, or fatigue",
+        "• Migraine\n  - If severe with light/sound sensitivity\n  - May need prescription medication",
+        "• Dehydration\n  - Common cause of headaches\n  - Easily treatable with fluids",
+        "• Sinusitis\n  - If accompanied by facial pressure\n  - May need decongestants"
+      );
+      recommendations.push(
+        "• Drink plenty of water",
+        "• Rest in dark, quiet room",
+        "• Apply cold compress to forehead",
+        "• Take over-the-counter pain relief"
+      );
     }
     
     if (lowerSymptoms.includes('cough') || lowerSymptoms.includes('cold')) {
-      analysis += "**Possible Conditions:**\n";
-      analysis += "• Upper Respiratory Infection (URI)\n";
-      analysis += "• Bronchitis - If cough is persistent\n";
-      analysis += "• Allergic Reaction - If seasonal or environmental\n\n";
+      conditions.push(
+        "• Upper Respiratory Infection (URI)\n  - Common cold, usually viral",
+        "• Bronchitis\n  - If cough is persistent with mucus",
+        "• Allergic Reaction\n  - If seasonal or environmental trigger"
+      );
+      recommendations.push(
+        "• Warm fluids (ginger tea, warm water)",
+        "• Steam inhalation 2-3 times daily",
+        "• Avoid cold foods and drinks",
+        "• Use honey for cough relief (1 tsp)"
+      );
     }
     
     if (lowerSymptoms.includes('chest pain') || lowerSymptoms.includes('difficulty breathing') || 
-        lowerSymptoms.includes('breathless')) {
-      analysis += "**🚨 URGENT - Seek Immediate Medical Attention**\n";
-      analysis += "Chest pain and breathing difficulties require immediate evaluation.\n";
-      analysis += "Please visit the nearest Emergency Room or call emergency services.\n\n";
-      
-      analysis += "**Severity Assessment:** HIGH RISK - EMERGENCY\n\n";
+        lowerSymptoms.includes('breathless') || lowerSymptoms.includes('shortness of breath')) {
+      severityLevel = "HIGH - EMERGENCY";
+      severityEmoji = "🔴";
+      redFlags = true;
+      analysis += `${severityEmoji} SEVERITY: ${severityLevel}
+
+⚠️ ⚠️ ⚠️ IMMEDIATE MEDICAL ATTENTION REQUIRED ⚠️ ⚠️ ⚠️
+
+Chest pain and breathing difficulties are MEDICAL EMERGENCIES.
+
+🚨 URGENT ACTION REQUIRED:
+• Call Emergency Services (108/102) immediately
+• Go to nearest Emergency Room NOW
+• Do NOT drive yourself - call ambulance
+• Stay calm and sit upright
+• Loosen tight clothing
+
+DO NOT DELAY - SEEK IMMEDIATE MEDICAL CARE
+
+`;
+      return analysis + `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚕️ DISCLAIMER: This is an AI-powered preliminary assessment only.
+It is NOT a substitute for professional medical diagnosis.
+Please consult a qualified healthcare provider immediately.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
     }
     
     if (lowerSymptoms.includes('stomach') || lowerSymptoms.includes('abdominal') || 
         lowerSymptoms.includes('nausea') || lowerSymptoms.includes('vomit')) {
-      analysis += "**Possible Conditions:**\n";
-      analysis += "• Gastroenteritis - Stomach flu\n";
-      analysis += "• Food Poisoning - If recent meal involved\n";
-      analysis += "• Indigestion - Common digestive issue\n\n";
+      conditions.push(
+        "• Gastroenteritis (Stomach Flu)\n  - Viral infection of digestive system",
+        "• Food Poisoning\n  - If symptoms started after eating\n  - Usually resolves in 24-48 hours",
+        "• Indigestion/Dyspepsia\n  - Common digestive issue\n  - Diet modification may help"
+      );
+      recommendations.push(
+        "• Oral Rehydration Solution (ORS)",
+        "• Avoid solid foods for few hours",
+        "• Start with bland foods (rice, banana)",
+        "• Small, frequent meals"
+      );
+    }
+
+    if (lowerSymptoms.includes('body pain') || lowerSymptoms.includes('body ache') || 
+        lowerSymptoms.includes('weakness') || lowerSymptoms.includes('fatigue')) {
+      conditions.push(
+        "• Viral Fever/Flu\n  - Body aches common with viral infections",
+        "• Fatigue/Overexertion\n  - Physical or mental exhaustion"
+      );
+      recommendations.push(
+        "• Complete bed rest",
+        "• Adequate sleep (8+ hours)",
+        "• Light, nutritious diet",
+        "• Avoid strenuous activity"
+      );
     }
     
-    analysis += "**Recommended Actions:**\n";
-    analysis += "• Rest and stay hydrated\n";
-    analysis += "• Monitor symptoms for changes\n";
-    analysis += "• Consult a doctor if symptoms worsen or persist beyond 2-3 days\n";
-    analysis += "• Seek immediate care for emergency symptoms\n\n";
+    // Add severity assessment
+    if (!redFlags) {
+      analysis += `${severityEmoji} SEVERITY LEVEL: ${severityLevel}
+${severityLevel === "MEDIUM" ? "\n⚠️ Moderate attention needed. Monitor symptoms closely." : "\n✓ Generally manageable at home with proper care."}
+
+`;
+    }
     
-    analysis += "**Red Flags (Go to ER immediately):**\n";
-    analysis += "• Severe chest pain or pressure\n";
-    analysis += "• Difficulty breathing or shortness of breath\n";
-    analysis += "• Sudden severe headache\n";
-    analysis += "• Loss of consciousness\n";
-    analysis += "• Severe bleeding\n";
-    analysis += "• Severe abdominal pain\n\n";
+    // Add possible conditions
+    if (conditions.length > 0) {
+      analysis += `📊 POSSIBLE CONDITIONS (Most to Least Likely):
+
+${conditions.join('\n\n')}
+
+`;
+    }
     
-    analysis += "✓ **AI Analysis Complete:** Your symptoms have been analyzed using our local database. ";
-    analysis += "For professional diagnosis and treatment, please consult a qualified healthcare provider. ";
-    analysis += "This assessment helps you understand your symptoms and when to seek medical care.\n\n";
+    // Add recommendations
+    analysis += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💊 RECOMMENDED HOME CARE & MANAGEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
     
-    analysis += "💡 **Tip:** This analysis works offline and is always available, even without internet connection.";
+    if (recommendations.length > 0) {
+      analysis += `${recommendations.join('\n')}\n\n`;
+    }
+    
+    analysis += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏥 WHEN TO SEEK MEDICAL ATTENTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+See a Doctor if:
+• Symptoms persist beyond 3-5 days
+• Symptoms worsen despite home care
+• You develop new concerning symptoms
+• You feel uncertain about your condition
+
+🚨 GO TO EMERGENCY ROOM IMMEDIATELY FOR:
+• Severe chest pain or pressure
+• Difficulty breathing/shortness of breath
+• Sudden severe headache (worst of your life)
+• Loss of consciousness or confusion
+• Severe bleeding that won't stop
+• Severe abdominal pain
+• High fever (>103°F/39.4°C) not reducing
+• Persistent vomiting (unable to keep fluids down)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📞 NEXT STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Book Video Consultation - Get professional advice from home
+✓ Find Nearby Hospitals - Locate healthcare facilities near you
+✓ Keep Health Records - Track symptoms and medications
+✓ Monitor Symptoms - Note any changes or improvements
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚕️ MEDICAL DISCLAIMER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This AI-powered analysis is for informational purposes only and 
+is NOT a substitute for professional medical advice, diagnosis, 
+or treatment. Always seek the advice of a qualified healthcare 
+provider with any questions regarding a medical condition.
+
+✓ Offline AI Analysis - Works without internet connection
+✓ Powered by MedAid Smart Health Assistant
+✓ Available in 8 Indian Languages
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
     
     return analysis;
   };
@@ -276,7 +415,7 @@ const PatientDashboard = () => {
 
         {/* Main Tabs for Dashboard Features */}
         <Tabs defaultValue="symptoms" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-9 h-auto p-1 gap-1 overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-8 h-auto p-1 gap-1 overflow-x-auto">
             <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Brain className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">{t('aiAnalysis')}</span>
@@ -284,8 +423,8 @@ const PatientDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="coach" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Heart className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">AI Coach</span>
-              <span className="sm:hidden">Coach</span>
+              <span className="hidden sm:inline">AI Chatbot</span>
+              <span className="sm:hidden">Chat</span>
             </TabsTrigger>
             <TabsTrigger value="appointments" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Calendar className="h-3 w-3 md:h-4 md:w-4" />
@@ -295,11 +434,6 @@ const PatientDashboard = () => {
             <TabsTrigger value="hospitals" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <MapPin className="h-3 w-3 md:h-4 md:w-4" />
               {t('hospitals')}
-            </TabsTrigger>
-            <TabsTrigger value="heatmap" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
-              <Activity className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Heatmap</span>
-              <span className="sm:hidden">Map</span>
             </TabsTrigger>
             <TabsTrigger value="medicines" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Pill className="h-3 w-3 md:h-4 md:w-4" />
@@ -375,9 +509,90 @@ const PatientDashboard = () => {
                   </div>
               
               {analysis && (
-                <div className="mt-3 md:mt-4 p-3 md:p-4 bg-muted rounded-lg border border-border">
-                  <h4 className="font-semibold mb-2 text-sm md:text-base">AI Analysis:</h4>
-                  <p className="text-xs md:text-sm whitespace-pre-wrap">{analysis}</p>
+                <div className="mt-3 md:mt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm md:text-base flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" />
+                      Medical Analysis Report
+                    </h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const reportWindow = window.open('', '_blank');
+                        if (reportWindow) {
+                          reportWindow.document.write(`
+                            <html>
+                              <head>
+                                <title>MedAid - Medical Analysis Report</title>
+                                <style>
+                                  body { 
+                                    font-family: 'Courier New', monospace; 
+                                    padding: 20px; 
+                                    max-width: 800px; 
+                                    margin: 0 auto;
+                                    line-height: 1.6;
+                                  }
+                                  pre { 
+                                    white-space: pre-wrap; 
+                                    word-wrap: break-word;
+                                    font-size: 12px;
+                                  }
+                                  @media print {
+                                    body { padding: 10px; }
+                                    .no-print { display: none; }
+                                  }
+                                </style>
+                              </head>
+                              <body>
+                                <div class="no-print" style="margin-bottom: 20px;">
+                                  <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer; background: #0066cc; color: white; border: none; border-radius: 5px;">Print Report</button>
+                                  <button onclick="window.close()" style="padding: 10px 20px; cursor: pointer; margin-left: 10px;">Close</button>
+                                </div>
+                                <pre>${analysis}</pre>
+                              </body>
+                            </html>
+                          `);
+                          reportWindow.document.close();
+                        }
+                      }}
+                      className="text-xs"
+                    >
+                      <FileText className="h-3 w-3 mr-1" />
+                      Print/Download
+                    </Button>
+                  </div>
+                  <div className="p-3 md:p-4 bg-slate-900 dark:bg-slate-950 rounded-lg border-2 border-primary/20 shadow-lg">
+                    <pre className="text-xs md:text-sm whitespace-pre-wrap text-slate-100 font-mono overflow-x-auto">{analysis}</pre>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="default"
+                      onClick={() => navigate("/doctors")}
+                      className="flex-1"
+                    >
+                      <Video className="h-4 w-4 mr-2" />
+                      Consult Doctor Now
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        const blob = new Blob([analysis], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `MedAid-Report-${new Date().toISOString().split('T')[0]}.txt`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        toast.success("Report downloaded!");
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Save Report
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -450,14 +665,19 @@ const PatientDashboard = () => {
         </div>
       </TabsContent>
 
-      {/* AI Coach Tab */}
+      {/* AI Chatbot Tab - Combined with Health Insights */}
       <TabsContent value="coach" className="space-y-4">
-        <PreventiveAICoach />
-      </TabsContent>
-
-      {/* Government Health Heatmap Tab */}
-      <TabsContent value="heatmap" className="space-y-4">
-        <GovernmentHealthHeatmap />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* AI Chatbot Section */}
+          <div className="space-y-4">
+            <PreventiveAICoach />
+          </div>
+          
+          {/* Government Health Heatmap Section */}
+          <div className="space-y-4">
+            <GovernmentHealthHeatmap />
+          </div>
+        </div>
       </TabsContent>
 
       {/* Jan Aushadhi & Medicines Tab */}
