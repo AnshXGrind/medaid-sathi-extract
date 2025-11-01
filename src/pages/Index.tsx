@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HealthNews from "@/components/HealthNews";
+import GovtSchemes from "@/components/GovtSchemes";
+import SOSButton from "@/components/SOSButton";
 import { 
   Stethoscope, 
   Brain, 
@@ -20,6 +22,9 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
+      
+      {/* SOS Emergency Button */}
+      <SOSButton />
       
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
@@ -119,6 +124,21 @@ const Index = () => {
           </div>
           <div className="max-w-5xl mx-auto">
             <HealthNews limit={4} showHeader={false} />
+          </div>
+        </div>
+      </section>
+
+      {/* Government Schemes Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 animate-slide-up">
+            <h2 className="text-4xl font-bold mb-4">Government Health Schemes</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Access government healthcare benefits and insurance schemes - Apply directly
+            </p>
+          </div>
+          <div className="max-w-6xl mx-auto">
+            <GovtSchemes limit={3} />
           </div>
         </div>
       </section>

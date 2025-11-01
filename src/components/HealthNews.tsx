@@ -143,35 +143,35 @@ export const HealthNews = ({ limit, showHeader = true, compact = false }: Health
   }
 
   return (
-    <Card className="shadow-md border-primary/10">
+    <Card className="shadow-md border-primary/10 touch-manipulation">
       {showHeader && (
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Newspaper className="h-6 w-6 text-primary" />
+        <CardHeader className="p-4 md:p-6">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 bg-primary/10 rounded-lg">
+                <Newspaper className="h-5 w-5 md:h-6 md:w-6 text-primary" />
               </div>
               <div>
-                <CardTitle>Healthcare News & Updates</CardTitle>
-                <CardDescription>Latest prevention tips and health alerts</CardDescription>
+                <CardTitle className="text-base md:text-lg">Healthcare News & Updates</CardTitle>
+                <CardDescription className="text-xs md:text-sm hidden sm:block">Latest prevention tips and health alerts</CardDescription>
               </div>
             </div>
-            <TrendingUp className="h-5 w-5 text-primary" />
+            <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
           </div>
         </CardHeader>
       )}
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6">
         {/* Category Filter */}
         {!compact && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 md:gap-2">
             {categories.map(category => (
               <Button
                 key={category}
                 variant={selectedCategory === category ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(category)}
-                className="text-xs"
+                className="text-xs h-8 md:h-9 touch-manipulation active:scale-95"
               >
                 {category}
               </Button>
@@ -180,41 +180,42 @@ export const HealthNews = ({ limit, showHeader = true, compact = false }: Health
         )}
 
         {/* News Items */}
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {displayedNews.map((item, index) => (
             <div 
               key={item.id}
-              className={`p-4 border rounded-lg hover:shadow-md transition-smooth cursor-pointer animate-slide-up ${
+              className={`p-3 md:p-4 border rounded-lg hover:shadow-md transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.99] ${
                 compact ? 'hover:bg-muted/50' : 'hover:border-primary/30'
               }`}
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => window.open(item.url, '_blank')}
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className={getCategoryColor(item.category)}>
+              <div className="flex items-start justify-between gap-2 md:gap-4">
+                <div className="flex-1 space-y-1.5 md:space-y-2 min-w-0">
+                  <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
+                    <Badge variant="outline" className={`${getCategoryColor(item.category)} text-xs`}>
                       {item.category}
                     </Badge>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      {formatDate(item.date)}
+                      <span className="hidden sm:inline">{formatDate(item.date)}</span>
+                      <span className="sm:hidden">{formatDate(item.date).split(' ')[0]}</span>
                     </div>
                   </div>
                   
-                  <h4 className={`font-semibold ${compact ? 'text-sm' : 'text-base'} leading-tight`}>
+                  <h4 className={`font-semibold ${compact ? 'text-xs md:text-sm' : 'text-sm md:text-base'} leading-tight line-clamp-2`}>
                     {item.title}
                   </h4>
                   
                   {!compact && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
                       {item.description}
                     </p>
                   )}
                   
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="font-medium">{item.source}</span>
-                    <Button variant="link" size="sm" className="h-auto p-0 text-xs gap-1">
+                  <div className="flex items-center gap-2 md:gap-4 text-xs flex-wrap">
+                    <span className="font-medium text-muted-foreground truncate">{item.source}</span>
+                    <Button variant="link" size="sm" className="h-auto p-0 text-xs gap-1 touch-manipulation active:scale-95">
                       Read more <ExternalLink className="h-3 w-3" />
                     </Button>
                   </div>
@@ -225,7 +226,7 @@ export const HealthNews = ({ limit, showHeader = true, compact = false }: Health
         </div>
 
         {limit && filteredNews.length > limit && (
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full h-10 md:h-11 text-sm md:text-base touch-manipulation active:scale-95">
             View All News ({filteredNews.length} articles)
           </Button>
         )}

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/Navbar";
 import HealthNews from "@/components/HealthNews";
+import GovtSchemes from "@/components/GovtSchemes";
+import SOSButton from "@/components/SOSButton";
 import { Brain, Video, MapPin, FileText, Mic, Send, Loader2, CreditCard, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -117,33 +119,36 @@ const PatientDashboard = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-24 pb-20">
-        <div className="mb-8 animate-fade-in">
-          <h1 className="text-4xl font-bold mb-2">Patient Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! How can we help you today?</p>
+      {/* SOS Emergency Button */}
+      <SOSButton />
+      
+      <div className="container mx-auto px-3 md:px-4 pt-20 md:pt-24 pb-16 md:pb-20">
+        <div className="mb-6 md:mb-8 animate-fade-in">
+          <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">Patient Dashboard</h1>
+          <p className="text-muted-foreground text-sm md:text-base">Welcome back! How can we help you today?</p>
         </div>
 
         {/* Patient Info Card - Aadhaar */}
         {aadhaarNumber && (
-          <Card className="mb-6 shadow-md border-primary/20 animate-fade-in">
-            <CardContent className="p-6">
+          <Card className="mb-4 md:mb-6 shadow-md border-primary/20 animate-fade-in touch-manipulation active:scale-[0.99]">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <CreditCard className="h-6 w-6 text-primary" />
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="p-2 md:p-3 bg-primary/10 rounded-lg">
+                    <CreditCard className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Government ID (Aadhaar)</p>
-                    <p className="text-lg font-semibold font-mono">{maskAadhaar(aadhaarNumber)}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">Government ID (Aadhaar)</p>
+                    <p className="text-base md:text-lg font-semibold font-mono">{maskAadhaar(aadhaarNumber)}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-500/10 rounded-lg">
-                    <UserIcon className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="p-1.5 md:p-2 bg-green-500/10 rounded-lg">
+                    <UserIcon className="h-4 w-4 md:h-5 md:w-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Patient Name</p>
-                    <p className="font-medium">{patientName}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">Patient Name</p>
+                    <p className="text-sm md:text-base font-medium">{patientName}</p>
                   </div>
                 </div>
               </div>
@@ -151,41 +156,41 @@ const PatientDashboard = () => {
           </Card>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
           {/* AI Symptom Analysis */}
-          <Card className="lg:col-span-2 shadow-md hover:shadow-lg transition-smooth animate-slide-up">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Brain className="h-6 w-6 text-primary" />
+          <Card className="lg:col-span-2 shadow-md hover:shadow-lg transition-smooth animate-slide-up touch-manipulation">
+            <CardHeader className="p-4 md:p-6">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="p-1.5 md:p-2 bg-primary/10 rounded-lg">
+                  <Brain className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                 </div>
                 <div>
-                  <CardTitle>AI Symptom Analysis</CardTitle>
-                  <CardDescription>Describe your symptoms in text or voice</CardDescription>
+                  <CardTitle className="text-base md:text-lg">AI Symptom Analysis</CardTitle>
+                  <CardDescription className="text-xs md:text-sm">Describe your symptoms in text or voice</CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6">
               <div className="relative">
                 <Textarea 
                   placeholder="Type your symptoms here... (e.g., 'I have a headache and fever for 2 days')"
-                  className="min-h-[150px] pr-12"
+                  className="min-h-[120px] md:min-h-[150px] pr-10 md:pr-12 text-sm md:text-base"
                   value={symptoms}
                   onChange={(e) => setSymptoms(e.target.value)}
                 />
                 <Button 
                   size="icon"
                   variant="ghost"
-                  className="absolute right-2 top-2 text-secondary hover:bg-secondary/10"
+                  className="absolute right-1 md:right-2 top-1 md:top-2 text-secondary hover:bg-secondary/10 h-8 w-8 md:h-10 md:w-10 touch-manipulation active:scale-95"
                   onClick={startRecording}
                   disabled={isRecording}
                 >
-                  <Mic className={`h-5 w-5 ${isRecording ? 'text-red-500 animate-pulse' : ''}`} />
+                  <Mic className={`h-4 w-4 md:h-5 md:w-5 ${isRecording ? 'text-red-500 animate-pulse' : ''}`} />
                 </Button>
               </div>
               <div className="flex gap-2">
                 <Button 
-                  className="flex-1 bg-primary"
+                  className="flex-1 bg-primary h-10 md:h-11 text-sm md:text-base touch-manipulation active:scale-95"
                   onClick={analyzeSymptoms}
                   disabled={isAnalyzing}
                 >
@@ -204,14 +209,14 @@ const PatientDashboard = () => {
               </div>
               
               {analysis && (
-                <div className="mt-4 p-4 bg-muted rounded-lg border border-border">
-                  <h4 className="font-semibold mb-2">AI Analysis:</h4>
-                  <p className="text-sm whitespace-pre-wrap">{analysis}</p>
+                <div className="mt-3 md:mt-4 p-3 md:p-4 bg-muted rounded-lg border border-border">
+                  <h4 className="font-semibold mb-2 text-sm md:text-base">AI Analysis:</h4>
+                  <p className="text-xs md:text-sm whitespace-pre-wrap">{analysis}</p>
                 </div>
               )}
 
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border">
-                <p className="text-sm text-muted-foreground">
+              <div className="mt-4 md:mt-6 p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   💡 Tip: Be as detailed as possible. Include duration, severity, and any other relevant information.
                 </p>
               </div>
@@ -219,82 +224,82 @@ const PatientDashboard = () => {
           </Card>
 
           {/* Quick Actions */}
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <Card 
-              className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up" 
+              className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.98]" 
               style={{ animationDelay: '0.1s' }}
               onClick={() => navigate("/doctors")}
             >
-              <CardContent className="p-6">
-                <div className="p-3 bg-accent/10 rounded-xl w-fit mb-4">
-                  <Video className="h-6 w-6 text-accent" />
+              <CardContent className="p-4 md:p-6">
+                <div className="p-2 md:p-3 bg-accent/10 rounded-xl w-fit mb-3 md:mb-4">
+                  <Video className="h-5 w-5 md:h-6 md:w-6 text-accent" />
                 </div>
-                <h3 className="font-semibold mb-2">Consult Doctor</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">Consult Doctor</h3>
+                <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
                   Book a video consultation with verified doctors
                 </p>
-                <Button className="w-full">View Doctors</Button>
+                <Button className="w-full h-9 md:h-10 text-sm md:text-base touch-manipulation active:scale-95">View Doctors</Button>
               </CardContent>
             </Card>
 
             <Card 
-              className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up" 
+              className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.98]" 
               style={{ animationDelay: '0.2s' }}
               onClick={() => navigate("/hospitals")}
             >
-              <CardContent className="p-6">
-                <div className="p-3 bg-secondary/10 rounded-xl w-fit mb-4">
-                  <MapPin className="h-6 w-6 text-secondary" />
+              <CardContent className="p-4 md:p-6">
+                <div className="p-2 md:p-3 bg-secondary/10 rounded-xl w-fit mb-3 md:mb-4">
+                  <MapPin className="h-5 w-5 md:h-6 md:w-6 text-secondary" />
                 </div>
-                <h3 className="font-semibold mb-2">Find Hospitals</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">Find Hospitals</h3>
+                <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
                   Locate nearby hospitals and pharmacies
                 </p>
-                <Button variant="outline" className="w-full">Open Map</Button>
+                <Button variant="outline" className="w-full h-9 md:h-10 text-sm md:text-base touch-manipulation active:scale-95">Open Map</Button>
               </CardContent>
             </Card>
 
             <Card 
-              className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up" 
+              className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.98]" 
               style={{ animationDelay: '0.3s' }}
               onClick={() => navigate("/health-records")}
             >
-              <CardContent className="p-6">
-                <div className="p-3 bg-primary/10 rounded-xl w-fit mb-4">
-                  <FileText className="h-6 w-6 text-primary" />
+              <CardContent className="p-4 md:p-6">
+                <div className="p-2 md:p-3 bg-primary/10 rounded-xl w-fit mb-3 md:mb-4">
+                  <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                 </div>
-                <h3 className="font-semibold mb-2">Health Records</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">Health Records</h3>
+                <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
                   View and download your medical history
                 </p>
-                <Button variant="outline" className="w-full">View Records</Button>
+                <Button variant="outline" className="w-full h-9 md:h-10 text-sm md:text-base touch-manipulation active:scale-95">View Records</Button>
               </CardContent>
             </Card>
           </div>
         </div>
 
         {/* Recent Activity */}
-        <Card className="mt-8 shadow-md animate-slide-up">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your latest health checkups and consultations</CardDescription>
+        <Card className="mt-6 md:mt-8 shadow-md animate-slide-up touch-manipulation">
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="text-base md:text-lg">Recent Activity</CardTitle>
+            <CardDescription className="text-xs md:text-sm">Your latest health checkups and consultations</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6">
             {consultations.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 {consultations.map((consultation) => (
                   <div 
                     key={consultation.id}
-                    className="p-4 border border-border rounded-lg"
+                    className="p-3 md:p-4 border border-border rounded-lg hover:bg-accent/5 transition-smooth touch-manipulation active:scale-[0.99]"
                   >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium">{consultation.symptoms.substring(0, 50)}...</p>
-                        <p className="text-sm text-muted-foreground">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm md:text-base truncate">{consultation.symptoms.substring(0, 50)}...</p>
+                        <p className="text-xs md:text-sm text-muted-foreground mt-1">
                           Status: {consultation.status}
                         </p>
                       </div>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                         {new Date(consultation.created_at).toLocaleDateString()}
                       </span>
                     </div>
@@ -302,7 +307,7 @@ const PatientDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-6 md:py-8 text-muted-foreground text-xs md:text-sm">
                 No recent activity. Start by analyzing your symptoms!
               </div>
             )}
@@ -310,8 +315,13 @@ const PatientDashboard = () => {
         </Card>
 
         {/* Healthcare News Section */}
-        <div className="mt-8 animate-slide-up">
+        <div className="mt-6 md:mt-8 animate-slide-up">
           <HealthNews limit={3} compact={true} />
+        </div>
+
+        {/* Government Schemes Section */}
+        <div className="mt-8 animate-slide-up">
+          <GovtSchemes limit={2} compact={true} />
         </div>
       </div>
     </div>
