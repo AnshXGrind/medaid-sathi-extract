@@ -11,7 +11,12 @@ import AadhaarUpload from "@/components/AadhaarUpload";
 import PrescriptionUpload from "@/components/PrescriptionUpload";
 import HospitalFinder from "@/components/HospitalFinder";
 import AppointmentBooking from "@/components/AppointmentBooking";
-import { Brain, Video, MapPin, FileText, Mic, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload } from "lucide-react";
+import PreventiveAICoach from "@/components/PreventiveAICoach";
+import GovernmentHealthHeatmap from "@/components/GovernmentHealthHeatmap";
+import JanAushadhiStockTracker from "@/components/JanAushadhiStockTracker";
+import SubsidyEligibilityChecker from "@/components/SubsidyEligibilityChecker";
+import VoiceVernacularAssistant from "@/components/VoiceVernacularAssistant";
+import { Brain, Video, MapPin, FileText, Mic, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Radio, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -267,27 +272,55 @@ const PatientDashboard = () => {
 
         {/* Main Tabs for Dashboard Features */}
         <Tabs defaultValue="symptoms" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto p-1 gap-1">
-            <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-10 h-auto p-1 gap-1 overflow-x-auto">
+            <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Brain className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">{t('aiAnalysis')}</span>
               <span className="sm:hidden">AI</span>
             </TabsTrigger>
-            <TabsTrigger value="appointments" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
-              <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-              {t('appointments')}
+            <TabsTrigger value="coach" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <Heart className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">AI Coach</span>
+              <span className="sm:hidden">Coach</span>
             </TabsTrigger>
-            <TabsTrigger value="hospitals" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
+            <TabsTrigger value="voice" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <Radio className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Voice</span>
+              <span className="sm:hidden">🎤</span>
+            </TabsTrigger>
+            <TabsTrigger value="appointments" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">{t('appointments')}</span>
+              <span className="sm:hidden">Appt</span>
+            </TabsTrigger>
+            <TabsTrigger value="hospitals" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <MapPin className="h-3 w-3 md:h-4 md:w-4" />
               {t('hospitals')}
             </TabsTrigger>
-            <TabsTrigger value="documents" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
-              <Upload className="h-3 w-3 md:h-4 md:w-4" />
-              {t('documents')}
+            <TabsTrigger value="heatmap" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <Activity className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Heatmap</span>
+              <span className="sm:hidden">Map</span>
             </TabsTrigger>
-            <TabsTrigger value="records" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
+            <TabsTrigger value="medicines" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <Pill className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Medicines</span>
+              <span className="sm:hidden">Rx</span>
+            </TabsTrigger>
+            <TabsTrigger value="subsidy" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <BadgeIndianRupee className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Subsidy</span>
+              <span className="sm:hidden">₹</span>
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <Upload className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">{t('documents')}</span>
+              <span className="sm:hidden">Docs</span>
+            </TabsTrigger>
+            <TabsTrigger value="records" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <FileText className="h-3 w-3 md:h-4 md:w-4" />
-              {t('records')}
+              <span className="hidden sm:inline">{t('records')}</span>
+              <span className="sm:hidden">📋</span>
             </TabsTrigger>
           </TabsList>
 
@@ -419,6 +452,31 @@ const PatientDashboard = () => {
             </>
           )}
         </div>
+      </TabsContent>
+
+      {/* AI Coach Tab */}
+      <TabsContent value="coach" className="space-y-4">
+        <PreventiveAICoach />
+      </TabsContent>
+
+      {/* Voice Assistant Tab */}
+      <TabsContent value="voice" className="space-y-4">
+        <VoiceVernacularAssistant />
+      </TabsContent>
+
+      {/* Government Health Heatmap Tab */}
+      <TabsContent value="heatmap" className="space-y-4">
+        <GovernmentHealthHeatmap />
+      </TabsContent>
+
+      {/* Jan Aushadhi & Medicines Tab */}
+      <TabsContent value="medicines" className="space-y-4">
+        <JanAushadhiStockTracker />
+      </TabsContent>
+
+      {/* Subsidy Eligibility Tab */}
+      <TabsContent value="subsidy" className="space-y-4">
+        <SubsidyEligibilityChecker />
       </TabsContent>
 
       {/* Records Tab */}
