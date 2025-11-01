@@ -120,7 +120,38 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
-        throw uploadError;
+        
+        // Fallback: Store file info locally
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const fileData = {
+            name: uploadedFile.name,
+            type: uploadedFile.type,
+            size: uploadedFile.size,
+            data: e.target?.result,
+            notes: notes,
+            uploadedAt: new Date().toISOString(),
+            userId: userId
+          };
+          
+          // Store in localStorage
+          const prescriptions = JSON.parse(localStorage.getItem('prescriptions') || '[]');
+          prescriptions.push(fileData);
+          localStorage.setItem('prescriptions', JSON.stringify(prescriptions));
+          
+          toast.success("Prescription saved locally!", {
+            description: "File stored in browser. Set up Supabase for cloud storage."
+          });
+          
+          setUploadedFile(null);
+          setPreviewUrl(null);
+          setNotes("");
+          if (fileInputRef.current) fileInputRef.current.value = '';
+          onUploadComplete?.();
+          setUploading(false);
+        };
+        reader.readAsDataURL(uploadedFile);
+        return;
       }
 
       const { data: { publicUrl } } = supabase.storage
