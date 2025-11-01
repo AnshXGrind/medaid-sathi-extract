@@ -214,18 +214,51 @@ const PatientDashboard = () => {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      toast.success("Voice recording started");
-      setIsRecording(true);
+      // Check if browser supports Web Speech API
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
-      // Implement actual voice recording logic here
-      setTimeout(() => {
-        stream.getTracks().forEach(track => track.stop());
+      if (!SpeechRecognition) {
+        toast.error("Voice recording not supported in your browser. Please use Chrome or Edge.");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-IN'; // Indian English
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsRecording(true);
+        toast.success("🎤 Listening... Describe your symptoms");
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setSymptoms(prev => prev ? `${prev} ${transcript}` : transcript);
+        toast.success("Voice recorded successfully!");
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
         setIsRecording(false);
-        toast.info("Voice recording feature coming soon!");
-      }, 3000);
+        if (event.error === 'no-speech') {
+          toast.error("No speech detected. Please try again.");
+        } else if (event.error === 'not-allowed') {
+          toast.error("Microphone access denied. Please enable microphone permissions.");
+        } else {
+          toast.error("Could not understand. Please try again.");
+        }
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognition.start();
     } catch (error) {
-      toast.error("Microphone access denied");
+      console.error('Voice recording error:', error);
+      toast.error("Microphone access denied or not available");
+      setIsRecording(false);
     }
   };
 
