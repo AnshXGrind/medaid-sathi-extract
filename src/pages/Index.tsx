@@ -15,7 +15,8 @@ import {
   Globe,
   Shield,
   Zap,
-  Users
+  Users,
+  ArrowRight
 } from "lucide-react";
 
 const Index = () => {
@@ -30,6 +31,19 @@ const Index = () => {
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 gradient-hero opacity-10"></div>
         <div className="container mx-auto px-4 relative z-10">
+          {/* Start Journey Button - Top Right */}
+          <div className="absolute top-4 right-4 md:top-8 md:right-8 animate-fade-in">
+            <Link to="/auth">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-glow transition-smooth group"
+              >
+                <span className="font-semibold">Start Journey</span>
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </div>
+
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-full mb-6">
               <Zap className="h-4 w-4 text-secondary" />
@@ -53,8 +67,9 @@ const Index = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/auth">
-                <Button size="lg" className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-glow transition-smooth text-lg px-8">
-                  Get Started Free
+                <Button size="lg" className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-glow transition-smooth text-lg px-8 group">
+                  <span>Get Started Free</span>
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
               <Link to="/about">
