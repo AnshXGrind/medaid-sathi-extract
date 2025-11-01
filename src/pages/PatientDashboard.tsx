@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 import { maskAadhaar } from "@/lib/aadhaar";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Consultation {
   id: string;
@@ -36,6 +37,7 @@ const PatientDashboard = () => {
   const [patientName, setPatientName] = useState<string>("");
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const loadUserData = async () => {
     if (!user) return;
@@ -137,8 +139,8 @@ const PatientDashboard = () => {
       
       <div className="container mx-auto px-3 md:px-4 pt-20 md:pt-24 pb-16 md:pb-20">
         <div className="mb-6 md:mb-8 animate-fade-in">
-          <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">Patient Dashboard</h1>
-          <p className="text-muted-foreground text-sm md:text-base">Welcome back! How can we help you today?</p>
+          <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">{t('patientDashboard')}</h1>
+          <p className="text-muted-foreground text-sm md:text-base">{t('welcomeBack')}! {t('yourHealthJourney')}</p>
         </div>
 
         {/* Patient Info Card - Aadhaar */}
@@ -174,23 +176,24 @@ const PatientDashboard = () => {
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto p-1 gap-1">
             <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
               <Brain className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">AI</span> Analysis
+              <span className="hidden sm:inline">{t('aiAnalysis')}</span>
+              <span className="sm:hidden">AI</span>
             </TabsTrigger>
             <TabsTrigger value="appointments" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
               <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-              Appointments
+              {t('appointments')}
             </TabsTrigger>
             <TabsTrigger value="hospitals" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
               <MapPin className="h-3 w-3 md:h-4 md:w-4" />
-              Hospitals
+              {t('hospitals')}
             </TabsTrigger>
             <TabsTrigger value="documents" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
               <Upload className="h-3 w-3 md:h-4 md:w-4" />
-              Documents
+              {t('documents')}
             </TabsTrigger>
             <TabsTrigger value="records" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1">
               <FileText className="h-3 w-3 md:h-4 md:w-4" />
-              Records
+              {t('records')}
             </TabsTrigger>
           </TabsList>
 

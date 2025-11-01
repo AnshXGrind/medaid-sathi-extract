@@ -3,10 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Activity, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import SettingsButton from "@/components/SettingsButton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <nav className="fixed top-0 w-full bg-card/80 backdrop-blur-lg border-b border-border z-50 transition-smooth">
@@ -24,20 +27,21 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link to="/" className="text-foreground hover:text-primary transition-smooth">
-              Home
+              {t('home')}
             </Link>
             <Link to="/about" className="text-foreground hover:text-primary transition-smooth">
-              About Us
+              {t('about')}
             </Link>
             <Link to="/resources" className="text-foreground hover:text-primary transition-smooth">
               Resources
             </Link>
             <Link to="/contact" className="text-foreground hover:text-primary transition-smooth">
-              Contact
+              {t('contact')}
             </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            <SettingsButton />
             {user ? (
               <Button 
                 onClick={signOut} 
@@ -45,13 +49,13 @@ const Navbar = () => {
                 className="transition-smooth"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+                {t('signOut')}
               </Button>
             ) : (
               <>
                 <Link to="/auth">
                   <Button variant="outline" className="transition-smooth">
-                    Sign In
+                    {t('signIn')}
                   </Button>
                 </Link>
                 <Link to="/auth">
@@ -64,12 +68,15 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 text-foreground hover:text-primary transition-smooth"
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <SettingsButton />
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 text-foreground hover:text-primary transition-smooth"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -81,14 +88,14 @@ const Navbar = () => {
                 className="px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-lg transition-smooth"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Home
+                {t('home')}
               </Link>
               <Link
                 to="/about"
                 className="px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-lg transition-smooth"
                 onClick={() => setIsMenuOpen(false)}
               >
-                About Us
+                {t('about')}
               </Link>
               <Link
                 to="/resources"
@@ -102,7 +109,7 @@ const Navbar = () => {
                 className="px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-lg transition-smooth"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Contact
+                {t('contact')}
               </Link>
               <div className="flex flex-col gap-2 pt-2 border-t border-border">
                 {user ? (
@@ -112,13 +119,13 @@ const Navbar = () => {
                     className="w-full"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    {t('signOut')}
                   </Button>
                 ) : (
                   <>
                     <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
                       <Button variant="outline" className="w-full">
-                        Sign In
+                        {t('signIn')}
                       </Button>
                     </Link>
                     <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
