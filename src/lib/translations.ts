@@ -32,7 +32,7 @@ export const translations = {
     // Tabs
     aiAnalysis: 'AI Analysis',
     appointments: 'Appointments',
-    hospitals: 'Hospitals',
+    hospitalsTab: 'Hospitals',
     documents: 'Documents',
     records: 'Records',
     
@@ -96,7 +96,7 @@ export const translations = {
     viewMedicalHistory: 'View and download your medical history',
     
     // SOS
-    emergency: 'Emergency',
+    emergencySOS: 'Emergency',
     emergencyServices: 'Emergency Services',
     
     // Footer
@@ -129,7 +129,7 @@ export const translations = {
     // Tabs
     aiAnalysis: 'एआई विश्लेषण',
     appointments: 'अपॉइंटमेंट',
-    hospitals: 'अस्पताल',
+    hospitalsTab: 'अस्पताल',
     documents: 'दस्तावेज़',
     records: 'रिकॉर्ड',
     
@@ -193,7 +193,7 @@ export const translations = {
     viewMedicalHistory: 'अपनी चिकित्सा इतिहास देखें और डाउनलोड करें',
     
     // SOS
-    emergency: 'आपातकाल',
+    emergencySOS: 'आपातकाल',
     emergencyServices: 'आपातकालीन सेवाएं',
     
     // Footer
@@ -220,7 +220,7 @@ export const translations = {
     yourHealthJourney: 'మీ ఆరోగ్య ప్రయాణం ఇక్కడ ప్రారంభమవుతుంది',
     aiAnalysis: 'AI విశ్లేషణ',
     appointments: 'అపాయింట్‌మెంట్‌లు',
-    hospitals: 'ఆసుపత్రులు',
+    hospitalsTab: 'ఆసుపత్రులు',
     documents: 'పత్రాలు',
     records: 'రికార్డులు',
     aiSymptomAnalysis: 'AI లక్షణ విశ్లేషణ',
@@ -248,7 +248,7 @@ export const translations = {
     yourHealthJourney: 'ನಿಮ್ಮ ಆರೋಗ್ಯ ಪ್ರಯಾಣ ಇಲ್ಲಿ ಪ್ರಾರಂಭವಾಗುತ್ತದೆ',
     aiAnalysis: 'AI ವಿಶ್ಲೇಷಣೆ',
     appointments: 'ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳು',
-    hospitals: 'ಆಸ್ಪತ್ರೆಗಳು',
+    hospitalsTab: 'ಆಸ್ಪತ್ರೆಗಳು',
     documents: 'ದಾಖಲೆಗಳು',
     records: 'ದಾಖಲೆಗಳು',
     aiSymptomAnalysis: 'AI ಲಕ್ಷಣ ವಿಶ್ಲೇಷಣೆ',
@@ -276,7 +276,7 @@ export const translations = {
     yourHealthJourney: 'നിങ്ങളുടെ ആരോഗ്യ യാത്ര ഇവിടെ ആരംഭിക്കുന്നു',
     aiAnalysis: 'AI വിശകലനം',
     appointments: 'അപ്പോയിന്റ്‌മെന്റുകൾ',
-    hospitals: 'ആശുപത്രികൾ',
+    hospitalsTab: 'ആശുപത്രികൾ',
     documents: 'രേഖകൾ',
     records: 'രേഖകൾ',
     aiSymptomAnalysis: 'AI ലക്ഷണ വിശകലനം',
@@ -304,7 +304,7 @@ export const translations = {
     yourHealthJourney: 'உங்கள் சுகாதார பயணம் இங்கே தொடங்குகிறது',
     aiAnalysis: 'AI பகுப்பாய்வு',
     appointments: 'சந்திப்புகள்',
-    hospitals: 'மருத்துவமனைகள்',
+    hospitalsTab: 'மருத்துவமனைகள்',
     documents: 'ஆவணங்கள்',
     records: 'பதிவுகள்',
     aiSymptomAnalysis: 'AI அறிகுறி பகுப்பாய்வு',
@@ -332,7 +332,7 @@ export const translations = {
     yourHealthJourney: 'તમારી સ્વાસ્થ્ય યાત્રા અહીંથી શરૂ થાય છે',
     aiAnalysis: 'AI વિશ્લેષણ',
     appointments: 'એપોઇન્ટમેન્ટ્સ',
-    hospitals: 'હોસ્પિટલો',
+    hospitalsTab: 'હોસ્પિટલો',
     documents: 'દસ્તાવેજો',
     records: 'રેકોર્ડ્સ',
     aiSymptomAnalysis: 'AI લક્ષણ વિશ્લેષણ',
@@ -360,7 +360,7 @@ export const translations = {
     yourHealthJourney: 'ਤੁਹਾਡੀ ਸਿਹਤ ਯਾਤਰਾ ਇੱਥੋਂ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ',
     aiAnalysis: 'AI ਵਿਸ਼ਲੇਸ਼ਣ',
     appointments: 'ਮੁਲਾਕਾਤਾਂ',
-    hospitals: 'ਹਸਪਤਾਲ',
+    hospitalsTab: 'ਹਸਪਤਾਲ',
     documents: 'ਦਸਤਾਵੇਜ਼',
     records: 'ਰਿਕਾਰਡ',
     aiSymptomAnalysis: 'AI ਲੱਛਣ ਵਿਸ਼ਲੇਸ਼ਣ',
