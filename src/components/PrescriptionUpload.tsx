@@ -110,27 +110,58 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
       const fileName = `${userId}-${Date.now()}.${fileExt}`;
       const filePath = `prescriptions/${fileName}`;
 
+      // Try to upload to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('documents')
-        .upload(filePath, uploadedFile);
+        .upload(filePath, uploadedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('documents')
         .getPublicUrl(filePath);
 
-      // Will be saved after migration runs
-      console.log('Prescription uploaded:', publicUrl, notes);
+      // Log the successful upload
+      console.log('Prescription uploaded successfully:', {
+        publicUrl,
+        notes,
+        fileName,
+        fileSize: uploadedFile.size
+      });
       
-      toast.success("Prescription uploaded successfully!");
+      toast.success("Prescription uploaded successfully!", {
+        description: `File: ${uploadedFile.name}`
+      });
+      
       setUploadedFile(null);
       setPreviewUrl(null);
       setNotes("");
       if (fileInputRef.current) fileInputRef.current.value = '';
       onUploadComplete?.();
     } catch (error) {
-      toast.error("Failed to upload prescription");
+      console.error("Upload error details:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      if (errorMessage.includes('bucket') || errorMessage.includes('not found')) {
+        toast.error("Storage not configured", {
+          description: "Please contact support to set up file storage."
+        });
+      } else if (errorMessage.includes('permission') || errorMessage.includes('policy')) {
+        toast.error("Permission denied", {
+          description: "Unable to upload file. Please check your permissions."
+        });
+      } else {
+        toast.error("Failed to upload prescription", {
+          description: errorMessage
+        });
+      }
     } finally {
       setUploading(false);
     }
