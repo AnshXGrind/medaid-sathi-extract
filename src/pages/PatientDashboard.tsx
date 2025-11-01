@@ -415,7 +415,7 @@ provider with any questions regarding a medical condition.
 
         {/* Main Tabs for Dashboard Features */}
         <Tabs defaultValue="symptoms" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-8 h-auto p-1 gap-1 overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 h-auto p-1 gap-1 overflow-x-auto">
             <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Brain className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">{t('aiAnalysis')}</span>
@@ -426,29 +426,15 @@ provider with any questions regarding a medical condition.
               <span className="hidden sm:inline">AI Chatbot</span>
               <span className="sm:hidden">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="appointments" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
-              <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">{t('appointments')}</span>
-              <span className="sm:hidden">Appt</span>
-            </TabsTrigger>
-            <TabsTrigger value="hospitals" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+            <TabsTrigger value="healthcare" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <MapPin className="h-3 w-3 md:h-4 md:w-4" />
-              {t('hospitals')}
+              <span className="hidden sm:inline">Healthcare</span>
+              <span className="sm:hidden">🏥</span>
             </TabsTrigger>
             <TabsTrigger value="medicines" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Pill className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Medicines</span>
-              <span className="sm:hidden">Rx</span>
-            </TabsTrigger>
-            <TabsTrigger value="subsidy" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
-              <BadgeIndianRupee className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Subsidy</span>
-              <span className="sm:hidden">₹</span>
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
-              <Upload className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">{t('documents')}</span>
-              <span className="sm:hidden">Docs</span>
+              <span className="hidden sm:inline">Medicines & Aid</span>
+              <span className="sm:hidden">💊</span>
             </TabsTrigger>
             <TabsTrigger value="records" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <FileText className="h-3 w-3 md:h-4 md:w-4" />
@@ -643,25 +629,42 @@ provider with any questions regarding a medical condition.
         </div>
       </TabsContent>
 
-      {/* Appointments Tab */}
-      <TabsContent value="appointments" className="space-y-4">
-        {user && <AppointmentBooking userId={user.id} />}
-      </TabsContent>
+      {/* Healthcare Tab - Combined Appointments, Hospitals & Documents */}
+      <TabsContent value="healthcare" className="space-y-4">
+        <div className="space-y-4">
+          {/* Appointments Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              Book Appointment
+            </h3>
+            {user && <AppointmentBooking userId={user.id} />}
+          </div>
 
-      {/* Hospitals Tab */}
-      <TabsContent value="hospitals" className="space-y-4">
-        <HospitalFinder />
-      </TabsContent>
+          {/* Hospitals Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              Find Hospitals Nearby
+            </h3>
+            <HospitalFinder />
+          </div>
 
-      {/* Documents Tab */}
-      <TabsContent value="documents" className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {user && (
-            <>
-              <AadhaarUpload userId={user.id} />
-              <PrescriptionUpload userId={user.id} />
-            </>
-          )}
+          {/* Documents Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Upload className="h-5 w-5 text-primary" />
+              Upload Documents
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {user && (
+                <>
+                  <AadhaarUpload userId={user.id} />
+                  <PrescriptionUpload userId={user.id} />
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </TabsContent>
 
@@ -680,14 +683,27 @@ provider with any questions regarding a medical condition.
         </div>
       </TabsContent>
 
-      {/* Jan Aushadhi & Medicines Tab */}
+      {/* Medicines & Financial Aid Tab - Combined */}
       <TabsContent value="medicines" className="space-y-4">
-        <JanAushadhiStockTracker />
-      </TabsContent>
+        <div className="space-y-4">
+          {/* Medicines Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Pill className="h-5 w-5 text-primary" />
+              Jan Aushadhi Medicine Tracker
+            </h3>
+            <JanAushadhiStockTracker />
+          </div>
 
-      {/* Subsidy Eligibility Tab */}
-      <TabsContent value="subsidy" className="space-y-4">
-        <SubsidyEligibilityChecker />
+          {/* Subsidy Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <BadgeIndianRupee className="h-5 w-5 text-primary" />
+              Government Subsidy & Aid Programs
+            </h3>
+            <SubsidyEligibilityChecker />
+          </div>
+        </div>
       </TabsContent>
 
       {/* Records Tab */}
