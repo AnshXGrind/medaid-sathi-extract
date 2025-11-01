@@ -187,7 +187,6 @@ export const HealthNews = ({ limit, showHeader = true, compact = false }: Health
               className={`p-3 md:p-4 border rounded-lg hover:shadow-md transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.99] ${
                 compact ? 'hover:bg-muted/50' : 'hover:border-primary/30'
               }`}
-              style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => window.open(item.url, '_blank')}
             >
               <div className="flex items-start justify-between gap-2 md:gap-4">
