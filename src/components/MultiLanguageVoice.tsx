@@ -104,7 +104,7 @@ export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoic
             setDetectedLanguage(langConfig.name);
             setDetectedText(detectedText);
             setTranscript(detectedText);
-            setCurrentLangCode(langConfig.code);
+            // Don't change currentLangCode automatically
             
             // Find the language key for this detected language
             const langKey = Object.keys(LANGUAGE_CODES).find(
@@ -113,14 +113,16 @@ export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoic
             
             if (langKey) {
               setDetectedLangKey(langKey);
-              // Show dialog to confirm language change
+              // Show dialog to confirm language change - don't auto-change
               setShowLanguageDialog(true);
             }
 
+            // Pass the transcript but don't change language automatically
             onTranscript(detectedText, langConfig.code);
             setIsListening(false);
             setIsAutoDetecting(false);
             
+            // Just notify, don't speak or change language
             toast.success(`🎤 Detected ${langConfig.native} (${langConfig.name})`);
           } else {
             // Confidence too low, try next language
@@ -371,8 +373,9 @@ export const MultiLanguageVoice = ({ onTranscript, isActive }: MultiLanguageVoic
               onClick={() => {
                 if (detectedLangKey) {
                   setLanguage(detectedLangKey);
-                  toast.success(`✓ Switched to ${detectedLanguage}!`);
                   const langConfig = LANGUAGE_CODES[detectedLangKey];
+                  setCurrentLangCode(langConfig.code);
+                  toast.success(`✓ Switched to ${detectedLanguage}!`);
                   speakResponse(`I understood your ${langConfig.name}`, langConfig.code);
                 }
                 setShowLanguageDialog(false);
