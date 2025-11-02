@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import SearchBar from "@/components/SearchBar";
+import FloatingBubbles from "@/components/FloatingBubbles";
 import HealthNews from "@/components/HealthNews";
 import GovtSchemes from "@/components/GovtSchemes";
 import SOSButton from "@/components/SOSButton";
@@ -391,6 +392,7 @@ provider with any questions regarding a medical condition.
     <div className="min-h-screen bg-background">
       <Navbar />
       <DashboardSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      <FloatingBubbles />
       
       {/* SOS Emergency Button */}
       <SOSButton />
