@@ -33,9 +33,6 @@ const Navbar = () => {
             <Link to="/about" className="text-foreground hover:text-primary transition-smooth">
               {t('about')}
             </Link>
-            <Link to="/vaccination-reminders" className="text-foreground hover:text-primary transition-smooth">
-              Vaccination Reminders
-            </Link>
             <Link to="/resources" className="text-foreground hover:text-primary transition-smooth">
               Resources
             </Link>
@@ -102,13 +99,6 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('about')}
-              </Link>
-              <Link
-                to="/vaccination-reminders"
-                className="px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-lg transition-smooth"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Vaccination Reminders
               </Link>
               <Link
                 to="/resources"

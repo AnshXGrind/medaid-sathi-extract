@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
+import DashboardSidebar from "@/components/DashboardSidebar";
+import SearchBar from "@/components/SearchBar";
 import HealthNews from "@/components/HealthNews";
 import GovtSchemes from "@/components/GovtSchemes";
 import SOSButton from "@/components/SOSButton";
@@ -57,6 +59,7 @@ const PatientDashboard = () => {
   const [aadhaarNumber, setAadhaarNumber] = useState<string>("");
   const [patientName, setPatientName] = useState<string>("");
   const [villageModeEnabled, setVillageModeEnabled] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("home");
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -387,20 +390,41 @@ provider with any questions regarding a medical condition.
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <DashboardSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
       {/* SOS Emergency Button */}
       <SOSButton />
       
-      <div className="container mx-auto px-3 md:px-4 pt-20 md:pt-24 pb-16 md:pb-20">
-        <div className="mb-6 md:mb-8 animate-fade-in flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">{t('patientDashboard')}</h1>
-            <p className="text-muted-foreground text-sm md:text-base">{t('welcomeBack')}! {t('yourHealthJourney')}</p>
+      <div className="ml-16 md:ml-64 transition-all duration-300">
+        <div className="container mx-auto px-3 md:px-4 pt-20 md:pt-24 pb-16 md:pb-20">
+        {/* Search Bar Section */}
+        <div className="mb-6 md:mb-8 animate-fade-in">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">{t('patientDashboard')}</h1>
+              <p className="text-muted-foreground text-sm md:text-base">{t('welcomeBack')}! {t('yourHealthJourney')}</p>
+            </div>
+            <VillageMode 
+              isEnabled={villageModeEnabled}
+              onToggle={setVillageModeEnabled}
+            />
           </div>
-          <VillageMode 
-            isEnabled={villageModeEnabled}
-            onToggle={setVillageModeEnabled}
-          />
+          
+          {/* Intelligent Search powered by Python */}
+          <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 p-4 md:p-6 rounded-lg border border-primary/20">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 bg-primary/20 rounded-lg">
+                <Brain className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-base md:text-lg">Intelligent Medical Search</h2>
+                <p className="text-xs md:text-sm text-muted-foreground">
+                  Powered by AI • Python Backend • Fuzzy Matching
+                </p>
+              </div>
+            </div>
+            <SearchBar />
+          </div>
         </div>
 
         {/* Patient Info Card - Aadhaar */}
@@ -901,6 +925,7 @@ provider with any questions regarding a medical condition.
         {/* Government Schemes Section */}
         <div className="mt-8 animate-slide-up">
           <GovtSchemes limit={2} compact={true} />
+        </div>
         </div>
       </div>
     </div>
