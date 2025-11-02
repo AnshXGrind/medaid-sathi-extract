@@ -79,11 +79,16 @@ const Index = () => {
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           {/* Village Mode Button */}
-          <div className="flex justify-center mb-12 animate-fade-in">
-            <VillageMode 
-              isEnabled={villageModeEnabled}
-              onToggle={setVillageModeEnabled}
-            />
+          <div className="flex justify-center mb-16 animate-fade-in">
+            <div className="text-center space-y-4">
+              <VillageMode 
+                isEnabled={villageModeEnabled}
+                onToggle={setVillageModeEnabled}
+              />
+              <p className="text-sm text-muted-foreground">
+                Optimized for low bandwidth • 90% data saved • Works offline
+              </p>
+            </div>
           </div>
 
           <div className="text-center mb-16 animate-slide-up">
@@ -186,7 +191,7 @@ const features = [
   {
     icon: Brain,
     title: "AI Symptom Analysis",
-    description: "Get instant AI-powered symptom analysis with voice and text support in multiple languages."
+    description: "Get instant AI-powered symptom analysis with text support in multiple languages."
   },
   {
     icon: Video,

@@ -21,7 +21,7 @@ export const PreventiveAICoach = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: "👋 Hello! I'm your AI Health Coach. I can help you with health tips, diet advice, exercise plans, and answer your wellness questions. How can I assist you today?",
+      content: "👋 Namaste! I'm your AI Health Coach powered by MedAid. I can help you with:\n\n✅ Personalized health tips\n✅ Diet & nutrition advice\n✅ Exercise plans\n✅ Stress management\n✅ Sleep improvement\n✅ General wellness questions\n\nHow can I help you live healthier today?",
       timestamp: new Date()
     }
   ]);

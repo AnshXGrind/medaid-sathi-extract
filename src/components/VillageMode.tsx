@@ -43,13 +43,13 @@ export const VillageMode = ({ isEnabled, onToggle }: VillageModeProps) => {
       onClick={handleToggle}
       className={`${
         isEnabled 
-          ? 'bg-green-600 hover:bg-green-700 text-white shadow-md' 
-          : 'border-2'
-      } transition-all duration-200`}
+          ? 'bg-green-600 hover:bg-green-700 text-white shadow-xl' 
+          : 'border-2 border-green-600/50 hover:border-green-600'
+      } transition-all duration-200 px-8 py-6 text-lg font-semibold`}
       size="lg"
     >
-      <Wifi className={`h-4 w-4 mr-2 ${isEnabled ? 'animate-pulse' : ''}`} />
-      Village Mode {isEnabled && '✓'}
+      <Wifi className={`h-6 w-6 mr-3 ${isEnabled ? 'animate-pulse' : ''}`} />
+      <span className="text-xl">🌾 Village Mode {isEnabled && '✓'}</span>
     </Button>
   );
 };

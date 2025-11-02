@@ -36,7 +36,6 @@ const PatientDashboard = () => {
   const [symptoms, setSymptoms] = useState("");
   const [analysis, setAnalysis] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [aadhaarNumber, setAadhaarNumber] = useState<string>("");
   const [patientName, setPatientName] = useState<string>("");
@@ -356,8 +355,6 @@ provider with any questions regarding a medical condition.
     return analysis;
   };
 
-  // Voice assistant removed - transcript handled via text input only
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -437,8 +434,6 @@ provider with any questions regarding a medical condition.
 
           {/* AI Symptom Analysis Tab */}
           <TabsContent value="symptoms" className="space-y-4">
-            {/* Voice assistant removed — use text input below to enter symptoms */}
-            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
               {/* AI Symptom Analysis */}
               <Card className="lg:col-span-2 shadow-md hover:shadow-lg transition-smooth animate-slide-up touch-manipulation">
@@ -449,14 +444,14 @@ provider with any questions regarding a medical condition.
                     </div>
                     <div>
                       <CardTitle className="text-base md:text-lg">AI Symptom Analysis</CardTitle>
-                      <CardDescription className="text-xs md:text-sm">Describe your symptoms in text or voice</CardDescription>
+                      <CardDescription className="text-xs md:text-sm">Describe your symptoms clearly</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6">
                   <div className="relative">
                     <Textarea 
-                      placeholder="Type your symptoms here... (e.g., 'I have a headache and fever for 2 days') OR use Voice Assistant above"
+                      placeholder="Type your symptoms here... (e.g., 'I have a headache and fever for 2 days')"
                       className="min-h-[120px] md:min-h-[150px] text-sm md:text-base"
                       value={symptoms}
                       onChange={(e) => setSymptoms(e.target.value)}

@@ -67,7 +67,7 @@ export const LanguageSelector = () => {
           ))}
         </div>
         <div className="text-xs text-muted-foreground text-center">
-          💡 Tip: You can also use voice detection to automatically switch languages
+          💡 Tip: The AI chatbot can help you in your preferred language
         </div>
       </DialogContent>
     </Dialog>
