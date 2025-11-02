@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import Footer from "@/components/Footer";
 import HealthNews from "@/components/HealthNews";
 import GovtSchemes from "@/components/GovtSchemes";
 import SOSButton from "@/components/SOSButton";
+import VillageMode from "@/components/VillageMode";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Stethoscope, 
@@ -22,6 +24,7 @@ import {
 
 const Index = () => {
   const { t } = useLanguage();
+  const [villageModeEnabled, setVillageModeEnabled] = useState(false);
   
   return (
     <div className="min-h-screen">
@@ -35,6 +38,14 @@ const Index = () => {
         <div className="absolute inset-0 gradient-hero opacity-10"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
+            {/* Village Mode Toggle at Top */}
+            <div className="flex justify-center mb-6">
+              <VillageMode 
+                isEnabled={villageModeEnabled}
+                onToggle={setVillageModeEnabled}
+              />
+            </div>
+            
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-full mb-6">
               <Zap className="h-4 w-4 text-secondary" />
               <span className="text-sm font-medium text-secondary">AI-Powered Healthcare Platform</span>
