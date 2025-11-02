@@ -8,6 +8,10 @@ import HealthNews from "@/components/HealthNews";
 import GovtSchemes from "@/components/GovtSchemes";
 import SOSButton from "@/components/SOSButton";
 import AadhaarUpload from "@/components/AadhaarUpload";
+import SecureAadhaarVerification from "@/components/SecureAadhaarVerification";
+import ABHAIntegration from "@/components/ABHAIntegration";
+import EmergencyRouting from "@/components/EmergencyRouting";
+import HealthInsightsDashboard from "@/components/HealthInsightsDashboard";
 import PrescriptionUpload from "@/components/PrescriptionUpload";
 import HospitalFinder from "@/components/HospitalFinder";
 import AppointmentBooking from "@/components/AppointmentBooking";
@@ -16,7 +20,7 @@ import GovernmentHealthHeatmap from "@/components/GovernmentHealthHeatmap";
 import JanAushadhiStockTracker from "@/components/JanAushadhiStockTracker";
 import SubsidyEligibilityChecker from "@/components/SubsidyEligibilityChecker";
 import VillageMode from "@/components/VillageMode";
-import { Brain, Video, MapPin, FileText, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Activity, Wifi, Download, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Brain, Video, MapPin, FileText, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Activity, Wifi, Download, Clock, CheckCircle, XCircle, AlertCircle, Shield, Ambulance, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -549,11 +553,26 @@ provider with any questions regarding a medical condition.
 
         {/* Main Tabs for Dashboard Features */}
         <Tabs defaultValue="symptoms" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 h-auto p-1 gap-1 overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-7 h-auto p-1 gap-1 overflow-x-auto">
             <TabsTrigger value="symptoms" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Brain className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">{t('aiAnalysis')}</span>
               <span className="sm:hidden">AI</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <Shield className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Privacy & ABHA</span>
+              <span className="sm:hidden">🔒</span>
+            </TabsTrigger>
+            <TabsTrigger value="emergency" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <Ambulance className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Emergency</span>
+              <span className="sm:hidden">🚨</span>
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
+              <BarChart3 className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Health Insights</span>
+              <span className="sm:hidden">📊</span>
             </TabsTrigger>
             <TabsTrigger value="coach" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Heart className="h-3 w-3 md:h-4 md:w-4" />
@@ -568,12 +587,7 @@ provider with any questions regarding a medical condition.
             <TabsTrigger value="medicines" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
               <Pill className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">Medicines & Aid</span>
-              <span className="sm:hidden">💊</span>
-            </TabsTrigger>
-            <TabsTrigger value="records" className="text-xs md:text-sm py-2 md:py-2.5 flex items-center gap-1 whitespace-nowrap">
-              <FileText className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">{t('records')}</span>
-              <span className="sm:hidden">📋</span>
+              <span className="sm:hidden">�</span>
             </TabsTrigger>
           </TabsList>
 
@@ -718,44 +732,89 @@ provider with any questions regarding a medical condition.
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
-          <div className="space-y-3 md:space-y-4">
-            <Card 
-              className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.98]" 
-              style={{ animationDelay: '0.1s' }}
-              onClick={() => navigate("/doctors")}
-            >
-              <CardContent className="p-4 md:p-6">
-                <div className="p-2 md:p-3 bg-accent/10 rounded-xl w-fit mb-3 md:mb-4">
-                  <Video className="h-5 w-5 md:h-6 md:w-6 text-accent" />
-                </div>
-                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">Consult Doctor</h3>
-                <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
-                  Book a video consultation with verified doctors
-                </p>
-                <Button className="w-full h-9 md:h-10 text-sm md:text-base touch-manipulation active:scale-95">View Doctors</Button>
-              </CardContent>
-            </Card>
+              {/* Quick Actions */}
+              <div className="space-y-3 md:space-y-4">
+                <Card 
+                  className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.98]" 
+                  style={{ animationDelay: '0.1s' }}
+                  onClick={() => navigate("/doctors")}
+                >
+                  <CardContent className="p-4 md:p-6">
+                    <div className="p-2 md:p-3 bg-accent/10 rounded-xl w-fit mb-3 md:mb-4">
+                      <Video className="h-5 w-5 md:h-6 md:w-6 text-accent" />
+                    </div>
+                    <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">Consult Doctor</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
+                      Book a video consultation with verified doctors
+                    </p>
+                    <Button className="w-full h-9 md:h-10 text-sm md:text-base touch-manipulation active:scale-95">View Doctors</Button>
+                  </CardContent>
+                </Card>
 
-            <Card 
-              className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.98]" 
-              style={{ animationDelay: '0.2s' }}
-              onClick={() => navigate("/health-records")}
-            >
-              <CardContent className="p-4 md:p-6">
-                <div className="p-2 md:p-3 bg-primary/10 rounded-xl w-fit mb-3 md:mb-4">
-                  <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">Health Records</h3>
-                <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
-                  View and download your medical history
-                </p>
-                <Button variant="outline" className="w-full h-9 md:h-10 text-sm md:text-base touch-manipulation active:scale-95">View Records</Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </TabsContent>
+                <Card 
+                  className="shadow-md hover:shadow-lg transition-smooth cursor-pointer animate-slide-up touch-manipulation active:scale-[0.98]" 
+                  style={{ animationDelay: '0.2s' }}
+                  onClick={() => navigate("/health-records")}
+                >
+                  <CardContent className="p-4 md:p-6">
+                    <div className="p-2 md:p-3 bg-primary/10 rounded-xl w-fit mb-3 md:mb-4">
+                      <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold mb-1 md:mb-2 text-sm md:text-base">Health Records</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
+                      View and download your medical history
+                    </p>
+                    <Button variant="outline" className="w-full h-9 md:h-10 text-sm md:text-base touch-manipulation active:scale-95">View Records</Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Security & Privacy Tab - ABHA Integration */}
+          <TabsContent value="security" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Secure Aadhaar Verification */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
+                  Privacy-First Aadhaar Verification
+                </h3>
+                {user && <SecureAadhaarVerification userId={user.id} />}
+              </div>
+
+              {/* ABHA Integration */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  ABHA Health ID
+                </h3>
+                {user && <ABHAIntegration userId={user.id} />}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Emergency Routing Tab */}
+          <TabsContent value="emergency" className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Ambulance className="h-5 w-5 text-red-600" />
+                Emergency Medical Services
+              </h3>
+              <EmergencyRouting />
+            </div>
+          </TabsContent>
+
+          {/* Health Insights Tab - AI Analytics */}
+          <TabsContent value="insights" className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                AI-Powered Health Insights
+              </h3>
+              <HealthInsightsDashboard />
+            </div>
+          </TabsContent>
 
       {/* Healthcare Tab - Combined Appointments, Hospitals & Documents */}
       <TabsContent value="healthcare" className="space-y-4">
@@ -787,7 +846,6 @@ provider with any questions regarding a medical condition.
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {user && (
                 <>
-                  <AadhaarUpload userId={user.id} />
                   <PrescriptionUpload userId={user.id} />
                 </>
               )}
@@ -832,45 +890,6 @@ provider with any questions regarding a medical condition.
             <SubsidyEligibilityChecker />
           </div>
         </div>
-      </TabsContent>
-
-      {/* Records Tab */}
-      <TabsContent value="records" className="space-y-4">
-        {/* Recent Activity */}
-        <Card className="shadow-md animate-slide-up touch-manipulation">
-          <CardHeader className="p-4 md:p-6">
-            <CardTitle className="text-base md:text-lg">Recent Activity</CardTitle>
-            <CardDescription className="text-xs md:text-sm">Your latest health checkups and consultations</CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6">
-            {consultations.length > 0 ? (
-              <div className="space-y-2 md:space-y-3">
-                {consultations.map((consultation) => (
-                  <div 
-                    key={consultation.id}
-                    className="p-3 md:p-4 border border-border rounded-lg hover:bg-accent/5 transition-smooth touch-manipulation active:scale-[0.99]"
-                  >
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm md:text-base truncate">{consultation.symptoms.substring(0, 50)}...</p>
-                        <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                          Status: {consultation.status}
-                        </p>
-                      </div>
-                      <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
-                        {new Date(consultation.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6 md:py-8 text-muted-foreground text-xs md:text-sm">
-                No recent activity. Start by analyzing your symptoms!
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </TabsContent>
     </Tabs>
 
