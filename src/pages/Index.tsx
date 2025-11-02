@@ -86,6 +86,24 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
+          {/* Village Mode Button - Prominent Display */}
+          <div className="flex justify-center mb-12 animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border-2 border-primary/20">
+              <div className="text-center mb-4">
+                <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                  🌾 Village Mode
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Optimized for rural areas • 90% data saved • 3x faster • Works offline
+                </p>
+              </div>
+              <VillageMode 
+                isEnabled={villageModeEnabled}
+                onToggle={setVillageModeEnabled}
+              />
+            </div>
+          </div>
+
           <div className="text-center mb-16 animate-slide-up">
             <h2 className="text-4xl font-bold mb-4">Comprehensive Healthcare Solutions</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
