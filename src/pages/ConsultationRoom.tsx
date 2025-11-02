@@ -39,6 +39,18 @@ const ConsultationRoom = () => {
   };
 
   const handleEndConsultation = async () => {
+    // Block saving notes that contain harmful instructions
+    try {
+      const contentSafety = await import('@/lib/contentSafety');
+      if (contentSafety.isHarmful(notes)) {
+        toast.error("Notes contain content that cannot be saved for safety reasons.");
+        navigate('/emergency');
+        return;
+      }
+    } catch (e) {
+      // If dynamic import fails, continue but log
+      console.error('Content safety check failed', e);
+    }
     const { error } = await supabase
       .from("consultations")
       .update({ 

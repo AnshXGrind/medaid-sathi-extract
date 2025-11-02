@@ -6,6 +6,24 @@
 [![Security: Zero Raw Aadhaar](https://img.shields.io/badge/Security-Zero%20Raw%20Aadhaar-green.svg)](https://github.com)
 [![NDHM: Integrated](https://img.shields.io/badge/NDHM-Integrated-orange.svg)](https://github.com)
 
+## 📚 Strategic Documentation
+
+**New to the project? Start here:**
+- 🎯 **[MVP Scope](./MVP_SCOPE.md)** - What we're building and why (3-6 month plan)
+- 🚀 **[Quick Start Guide](./QUICK_START.md)** - Your 7-day implementation plan
+- 🗺️ **[Technical Roadmap](./ROADMAP.md)** - 6/12/18-month strategic plan
+- 🏛️ **[Government Integration](./GOVERNMENT_INTEGRATION.md)** - ABDM APIs and compliance
+- 🔐 **[Security & Compliance](./SECURITY_COMPLIANCE.md)** - DPDP Act and audit checklist
+- 💼 **[Pitch Deck](./PITCH_DECK.md)** - Investor and government presentation
+
+**For developers:**
+- 📖 [Deployment Guide](./DEPLOYMENT.md)
+- 🔧 [Storage Setup](./STORAGE_SETUP.md)
+- 🆔 [Aadhaar Integration](./AADHAAR_INTEGRATION.md)
+- 🏥 [Sample Doctors Setup](./SAMPLE_DOCTORS_SETUP.md)
+- 🌾 [Village Mode Features](./VILLAGE_MODE_FEATURES.md)
+- 📋 [System Overview](./SYSTEM_OVERVIEW.md)
+
 ## 🌟 Revolutionary Features
 
 ### 🔐 **World-Class Privacy & Security**

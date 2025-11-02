@@ -20,7 +20,8 @@ import {
   Zap,
   Users,
   ArrowRight,
-  HeartPulse
+  HeartPulse,
+  Calendar
 } from "lucide-react";
 
 const Index = () => {
@@ -203,6 +204,11 @@ const features = [
     icon: HeartPulse,
     title: "ASHA Worker Dashboard",
     description: "Unique resource allocation system for ASHA workers to request medicines, ambulance, and doctor visits with government tracking IDs."
+  },
+  {
+    icon: Calendar,
+    title: "Vaccination & Health Reminders",
+    description: "Never miss important vaccines or checkups with AI-powered reminders integrated with local healthcare databases."
   },
   {
     icon: MapPin,

@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { isHarmful, getHarmType, safeAssistantResponse } from "@/lib/contentSafety";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +14,9 @@ import {
   Send,
   Bot,
   User
-} from "lucide-react";interface ChatMessage {
+} from "lucide-react";
+
+interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
@@ -26,12 +31,35 @@ export const PreventiveAICoach = () => {
     }
   ]);
   const [userInput, setUserInput] = useState("");
+  const navigate = useNavigate();
 
   const healthScore = 75; // Overall health score out of 100
+  const [harmWarning, setHarmWarning] = useState<{
+    visible: boolean;
+    type: string | null;
+    message: string;
+  }>({ visible: false, type: null, message: '' });
 
   const handleSendMessage = () => {
     if (!userInput.trim()) return;
-    
+    // Check for harmful content first
+    if (isHarmful(userInput)) {
+      const type = getHarmType(userInput);
+      const assistantText = safeAssistantResponse(type);
+      // Do not forward to AI - show safe assistant overlay instead of redirecting immediately
+      const aiMessage: ChatMessage = {
+        role: 'assistant',
+        content: assistantText,
+        timestamp: new Date()
+      };
+
+      setChatMessages(prev => [...prev, aiMessage]);
+      setUserInput("");
+      toast.error("Request blocked for safety reasons.");
+      setHarmWarning({ visible: true, type: type, message: assistantText });
+      return;
+    }
+
     // Add user message
     const newUserMessage: ChatMessage = {
       role: 'user',
@@ -73,6 +101,39 @@ export const PreventiveAICoach = () => {
 
   return (
     <Card className="shadow-md h-full flex flex-col">
+      {/* Harm warning overlay */}
+      {harmWarning.visible && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-lg max-w-lg w-full p-6 shadow-lg border">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Caution</h3>
+                <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{harmWarning.message}</p>
+              </div>
+              <div>
+                <Button variant="destructive" size="sm" onClick={() => {
+                  setHarmWarning({ visible: false, type: null, message: '' });
+                }}>
+                  <span className="mr-2">✕</span>Dismiss
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-4 flex gap-3">
+              <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white" onClick={() => navigate('/emergency')}>
+                <span className="mr-2">🆘</span>Emergency Help
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => {
+                // Provide safer resources inline and close the overlay
+                setHarmWarning({ visible: false, type: null, message: '' });
+                toast.success('If you are struggling, please consider contacting local helplines or a trusted person.');
+              }}>
+                Need Support Info
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <CardHeader className="p-4 md:p-6 border-b">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3">

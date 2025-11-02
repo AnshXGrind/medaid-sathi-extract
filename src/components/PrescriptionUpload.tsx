@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import { isHarmful } from '@/lib/contentSafety';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, Camera, FileText, CheckCircle, Loader2, X, Image } from "lucide-react";
@@ -22,6 +24,7 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const navigate = useNavigate();
 
   // Cleanup camera stream on unmount
   useEffect(() => {
@@ -203,6 +206,12 @@ export const PrescriptionUpload = ({ userId, onUploadComplete }: PrescriptionUpl
   };
 
   const handleUpload = async () => {
+    // Basic safety check on optional notes
+    if (isHarmful(notes)) {
+      toast.error("Notes contain harmful or illegal content. Redirecting to emergency help page.");
+      setTimeout(() => navigate('/emergency'), 250);
+      return;
+    }
     if (!uploadedFile) return;
 
     setUploading(true);
