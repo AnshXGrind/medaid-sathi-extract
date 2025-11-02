@@ -21,6 +21,8 @@ import Resources from "./pages/Resources";
 import NotFound from "./pages/NotFound";
 import EmergencyHelp from "./pages/EmergencyHelp";
 import VaccinationReminders from "./pages/VaccinationReminders";
+import CreateHealthID from "./pages/CreateHealthID";
+import EnhancedVaccinationReminder from "./pages/EnhancedVaccinationReminder";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +50,8 @@ const App = () => (
             <Route path="/resources" element={<Resources />} />
             <Route path="/emergency" element={<EmergencyHelp />} />
             <Route path="/vaccination-reminders" element={<VaccinationReminders />} />
+            <Route path="/create-health-id" element={<CreateHealthID />} />
+            <Route path="/enhanced-vaccination" element={<EnhancedVaccinationReminder />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
