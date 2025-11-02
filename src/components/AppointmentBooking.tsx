@@ -72,14 +72,11 @@ export const AppointmentBooking = ({ userId, onBookingComplete }: AppointmentBoo
   const loadDoctors = async () => {
     try {
       // Get doctor profiles with user information and medical IDs
+      // Using the schema from 20251029 migration (user_id, medical_id, specialty, consultation_fee)
       const { data: doctorProfiles, error } = await supabase
         .from('doctor_profiles')
-        .select(`
-          user_id,
-          specialty,
-          consultation_fee,
-          medical_id
-        `);
+        .select('user_id, specialty, consultation_fee, medical_id, is_verified, is_online')
+        .eq('is_verified', true);
 
       if (error) {
         console.error('Error loading doctors:', error);
@@ -88,34 +85,31 @@ export const AppointmentBooking = ({ userId, onBookingComplete }: AppointmentBoo
       }
 
       if (doctorProfiles && doctorProfiles.length > 0) {
-        // Get user profiles separately
-        const userIds = doctorProfiles.map((p: { user_id: string }) => p.user_id);
+        // Get user profiles separately for doctor names
+        const userIds = doctorProfiles.map(p => p.user_id);
         const { data: profiles } = await supabase
           .from('profiles')
           .select('id, full_name')
           .in('id', userIds);
 
-        const formattedDoctors: Doctor[] = doctorProfiles.map((profile: {
-          user_id: string;
-          specialty?: string;
-          consultation_fee?: number;
-          medical_id?: string;
-        }) => {
-          const userProfile = profiles?.find((p: { id: string }) => p.id === profile.user_id);
+        const formattedDoctors: Doctor[] = doctorProfiles.map(profile => {
+          const userProfile = profiles?.find(p => p.id === profile.user_id);
           return {
             id: profile.user_id,
             full_name: userProfile?.full_name || 'Doctor',
-            specialization: profile.specialty,
+            specialization: profile.specialty || 'General Physician',
             video_rate: profile.consultation_fee || 500,
-            face_to_face_rate: (profile.consultation_fee || 500) * 1.5,
-            medical_id: profile.medical_id,
-            location: 'Available Online',
-            experience_years: 10
+            face_to_face_rate: Math.floor((profile.consultation_fee || 500) * 1.5),
+            medical_id: profile.medical_id || 'Not specified',
+            location: 'Available Online', // Can be enhanced later
+            experience_years: 10 // Can be enhanced later
           };
         });
         
+        console.log('Loaded doctors from database:', formattedDoctors);
         setDoctors(formattedDoctors);
       } else {
+        console.log('No doctors found in database, using mock data');
         setMockDoctors();
       }
     } catch (error) {
