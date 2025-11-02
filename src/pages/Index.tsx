@@ -19,7 +19,8 @@ import {
   Shield,
   Zap,
   Users,
-  ArrowRight
+  ArrowRight,
+  HeartPulse
 } from "lucide-react";
 
 const Index = () => {
@@ -199,6 +200,11 @@ const features = [
     description: "Connect with verified doctors through secure video consultations from anywhere."
   },
   {
+    icon: HeartPulse,
+    title: "ASHA Worker Dashboard",
+    description: "Unique resource allocation system for ASHA workers to request medicines, ambulance, and doctor visits with government tracking IDs."
+  },
+  {
     icon: MapPin,
     title: "Hospital Locator",
     description: "Find nearby hospitals, clinics, and pharmacies with real-time availability information."
@@ -217,6 +223,11 @@ const features = [
     icon: Shield,
     title: "Secure & Private",
     description: "Your health data is encrypted and protected with industry-standard security."
+  },
+  {
+    icon: Zap,
+    title: "Village Mode",
+    description: "Optimized for low-bandwidth rural areas - 90% data savings, works offline, and 3x faster loading."
   }
 ];
 

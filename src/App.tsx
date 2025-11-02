@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import PatientDashboard from "./pages/PatientDashboard";
 import DoctorDashboard from "./pages/DoctorDashboard";
+import AshaDashboard from "./pages/AshaDashboard";
 import DoctorProfile from "./pages/DoctorProfile";
 import DoctorPatients from "./pages/DoctorPatients";
 import Doctors from "./pages/Doctors";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/patient-dashboard" element={<PatientDashboard />} />
             <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+            <Route path="/asha-dashboard" element={<AshaDashboard />} />
             <Route path="/doctor-profile" element={<DoctorProfile />} />
             <Route path="/doctor-patients" element={<DoctorPatients />} />
             <Route path="/consultation/:id" element={<ConsultationRoom />} />

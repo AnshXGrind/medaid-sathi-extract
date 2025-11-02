@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      asha_resource_requests: {
+        Row: {
+          id: string
+          asha_id: string
+          resource_type: string
+          patient_name: string
+          patient_contact: string
+          village_name: string
+          urgency: string
+          status: string
+          details: string
+          government_id: string | null
+          approved_by: string | null
+          approved_at: string | null
+          completed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          asha_id: string
+          resource_type: string
+          patient_name: string
+          patient_contact: string
+          village_name: string
+          urgency?: string
+          status?: string
+          details: string
+          government_id?: string | null
+          approved_by?: string | null
+          approved_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          asha_id?: string
+          resource_type?: string
+          patient_name?: string
+          patient_contact?: string
+          village_name?: string
+          urgency?: string
+          status?: string
+          details?: string
+          government_id?: string | null
+          approved_by?: string | null
+          approved_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           id: string
