@@ -38,14 +38,6 @@ const Index = () => {
         <div className="absolute inset-0 gradient-hero opacity-10"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            {/* Village Mode Toggle at Top */}
-            <div className="flex justify-center mb-6">
-              <VillageMode 
-                isEnabled={villageModeEnabled}
-                onToggle={setVillageModeEnabled}
-              />
-            </div>
-            
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-full mb-6">
               <Zap className="h-4 w-4 text-secondary" />
               <span className="text-sm font-medium text-secondary">AI-Powered Healthcare Platform</span>
@@ -86,21 +78,86 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          {/* Village Mode Button - Prominent Display */}
-          <div className="flex justify-center mb-12 animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border-2 border-primary/20">
-              <div className="text-center mb-4">
-                <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                  🌾 Village Mode
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Optimized for rural areas • 90% data saved • 3x faster • Works offline
-                </p>
+          {/* Village Mode - Premium Impressive Display */}
+          <div className="flex justify-center mb-16 animate-fade-in">
+            <div className="relative max-w-4xl w-full">
+              {/* Glow effect background */}
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 via-emerald-500/20 to-teal-500/20 rounded-3xl blur-xl"></div>
+              
+              <div className="relative bg-gradient-to-br from-white via-green-50/50 to-emerald-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 md:p-12 border-2 border-green-500/30">
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                      <span className="text-2xl">🌾</span>
+                    </div>
+                    <h3 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                      Village Mode
+                    </h3>
+                  </div>
+                  <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-2">
+                    Designed for rural India with <span className="font-semibold text-green-600 dark:text-green-400">ultra-low data</span> consumption
+                  </p>
+                  <p className="text-sm text-muted-foreground italic">
+                    Perfect for 2G/3G networks • Works even with poor connectivity
+                  </p>
+                </div>
+
+                {/* Features Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="text-center p-4 rounded-2xl bg-white/50 dark:bg-slate-800/50 backdrop-blur border border-green-200/50 dark:border-green-500/20">
+                    <div className="text-3xl mb-2">📊</div>
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">90%</div>
+                    <div className="text-sm text-muted-foreground">Data Saved</div>
+                  </div>
+                  <div className="text-center p-4 rounded-2xl bg-white/50 dark:bg-slate-800/50 backdrop-blur border border-emerald-200/50 dark:border-emerald-500/20">
+                    <div className="text-3xl mb-2">⚡</div>
+                    <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">3x Faster</div>
+                    <div className="text-sm text-muted-foreground">Loading Speed</div>
+                  </div>
+                  <div className="text-center p-4 rounded-2xl bg-white/50 dark:bg-slate-800/50 backdrop-blur border border-teal-200/50 dark:border-teal-500/20">
+                    <div className="text-3xl mb-2">📱</div>
+                    <div className="text-2xl font-bold text-teal-600 dark:text-teal-400 mb-1">Offline</div>
+                    <div className="text-sm text-muted-foreground">Works Anywhere</div>
+                  </div>
+                </div>
+
+                {/* Benefits List */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 text-sm">
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50/50 dark:bg-green-900/10">
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span className="text-muted-foreground">Compressed images for faster loading</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50/50 dark:bg-green-900/10">
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span className="text-muted-foreground">Simplified interface for clarity</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50/50 dark:bg-green-900/10">
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span className="text-muted-foreground">Offline symptom analysis available</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50/50 dark:bg-green-900/10">
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span className="text-muted-foreground">Minimal animations for smooth performance</span>
+                  </div>
+                </div>
+
+                {/* Toggle Button - Centered */}
+                <div className="flex justify-center">
+                  <VillageMode 
+                    isEnabled={villageModeEnabled}
+                    onToggle={setVillageModeEnabled}
+                  />
+                </div>
               </div>
-              <VillageMode 
-                isEnabled={villageModeEnabled}
-                onToggle={setVillageModeEnabled}
-              />
             </div>
           </div>
 
