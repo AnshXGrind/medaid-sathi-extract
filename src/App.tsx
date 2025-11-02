@@ -23,6 +23,7 @@ import EmergencyHelp from "./pages/EmergencyHelp";
 import VaccinationReminders from "./pages/VaccinationReminders";
 import CreateHealthID from "./pages/CreateHealthID";
 import EnhancedVaccinationReminder from "./pages/EnhancedVaccinationReminder";
+import OffersPage from "./pages/OffersPage";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/vaccination-reminders" element={<VaccinationReminders />} />
             <Route path="/create-health-id" element={<CreateHealthID />} />
             <Route path="/enhanced-vaccination" element={<EnhancedVaccinationReminder />} />
+            <Route path="/offers" element={<OffersPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

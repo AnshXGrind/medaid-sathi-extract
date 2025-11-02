@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { 
   Shield, 
   Heart, 
@@ -13,7 +14,8 @@ import {
   Stethoscope,
   X,
   ExternalLink,
-  Info
+  Info,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +48,7 @@ interface GovtScheme {
 type Bubble = (InsuranceScheme & { category: 'insurance' }) | (GovtScheme & { category: 'govt' });
 
 const FloatingBubbles = () => {
+  const navigate = useNavigate();
   const [selectedBubble, setSelectedBubble] = useState<string | null>(null);
   const [hoveredBubble, setHoveredBubble] = useState<string | null>(null);
 
@@ -395,6 +398,43 @@ const FloatingBubbles = () => {
     <>
       {/* Floating Bubbles Container */}
       <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden">
+        {/* Special Offers Bubble - Center Top */}
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 pointer-events-auto">
+          <div 
+            className="relative group cursor-pointer"
+            onClick={() => navigate('/offers')}
+            onMouseEnter={() => setHoveredBubble('offers')}
+            onMouseLeave={() => setHoveredBubble(null)}
+          >
+            <div className={cn(
+              "w-24 h-24 rounded-full flex items-center justify-center shadow-2xl",
+              "bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500",
+              "transition-all duration-300 hover:scale-110 animate-float",
+              "border-4 border-white/50 hover:border-white/80",
+              "relative overflow-hidden"
+            )}>
+              {/* Pulse animation overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-rose-500 animate-pulse opacity-50" />
+              
+              {/* Icon */}
+              <Sparkles className="h-10 w-10 text-white relative z-10 animate-pulse" />
+              
+              {/* Badge */}
+              <Badge className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 shadow-lg animate-bounce">
+                HOT
+              </Badge>
+            </div>
+            
+            {/* Hover tooltip */}
+            {hoveredBubble === 'offers' && (
+              <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap shadow-xl animate-fade-in z-[60]">
+                🎁 Exclusive Offers!
+                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-black/90 rotate-45" />
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Top Left - Insurance Bubbles */}
         <div className="absolute top-24 left-4 space-y-4 pointer-events-auto">
           {insuranceSchemes.slice(0, 2).map((scheme, idx) => (

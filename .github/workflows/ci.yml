@@ -1,0 +1,81 @@
+name: CI Security & Quality Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  security-and-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🔍 TypeScript type checking
+      run: npx tsc --noEmit
+      
+    - name: 🧹 ESLint
+      run: npm run lint
+      continue-on-error: true  # Don't fail build, but show warnings
+      
+    - name: 🔒 Security audit (npm)
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+      
+    - name: 🔐 Check for secrets in code
+      uses: trufflesecurity/trufflehog@main
+      with:
+        extra_args: --only-verified
+        
+    - name: 📊 Build check
+      run: npm run build
+      env:
+        # Use dummy values for build check
+        VITE_SUPABASE_URL: https://example.supabase.co
+        VITE_SUPABASE_ANON_KEY: dummy-key-for-build-check
+        VITE_AADHAAR_HMAC_SECRET: dummy-secret-min-32-characters-long
+        
+    - name: 📋 Dependency Review
+      uses: actions/dependency-review-action@v4
+      if: github.event_name == 'pull_request'
+      
+  backend-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: 📦 Install backend dependencies
+      working-directory: ./backend-modules
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install bandit safety
+        
+    - name: 🔒 Python security scan (Bandit)
+      working-directory: ./backend-modules
+      run: bandit -r . -f json -o bandit-report.json
+      continue-on-error: true
+      
+    - name: 🔐 Python dependency vulnerability scan
+      working-directory: ./backend-modules
+      run: safety check --json
+      continue-on-error: true
