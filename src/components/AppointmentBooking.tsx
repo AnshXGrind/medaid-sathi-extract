@@ -39,21 +39,62 @@ export const AppointmentBooking = ({ userId, onBookingComplete }: AppointmentBoo
 
   useEffect(() => {
     loadDoctors();
+    setupRealtimeSubscription();
   }, []);
+
+  const setupRealtimeSubscription = () => {
+    // Subscribe to real-time changes in doctor_profiles
+    const channel = supabase
+      .channel('doctor-profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'doctor_profiles'
+        },
+        () => {
+          console.log('Doctor profiles updated, reloading...');
+          loadDoctors();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
 
   const loadDoctors = async () => {
     try {
-      // Get users with doctor role
-      const { data: doctorRoles } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'doctor');
+      // Get doctor profiles with user information
+      const { data: doctorProfiles, error } = await supabase
+        .from('doctor_profiles')
+        .select(`
+          doctor_id,
+          specialization,
+          video_consultation_rate,
+          face_to_face_rate,
+          profiles!doctor_profiles_doctor_id_fkey(full_name)
+        `);
 
-      if (doctorRoles) {
-        // Get doctor profiles
-        const doctorIds = doctorRoles.map(d => d.user_id);
+      if (error) {
+        console.error('Error loading doctors:', error);
+        return;
+      }
+
+      if (doctorProfiles && doctorProfiles.length > 0) {
+        const formattedDoctors: Doctor[] = doctorProfiles.map((profile: any) => ({
+          id: profile.doctor_id,
+          full_name: profile.profiles?.full_name || 'Doctor',
+          specialization: profile.specialization,
+          video_rate: profile.video_consultation_rate || 500,
+          face_to_face_rate: profile.face_to_face_rate || 800
+        }));
         
-        // Mock doctor data for now
+        setDoctors(formattedDoctors);
+      } else {
+        // Fallback to mock data if no doctors in database
         const mockDoctors: Doctor[] = [
           {
             id: "doc1",
@@ -107,17 +148,30 @@ export const AppointmentBooking = ({ userId, onBookingComplete }: AppointmentBoo
       const appointmentDateTime = new Date(`${appointmentDate}T${appointmentTime}`);
       const fee = getConsultationFee();
 
-      // Will be saved after migration runs
-      console.log('Booking appointment:', {
-        patient_id: userId,
-        doctor_id: selectedDoctor,
-        appointment_type: appointmentType,
-        appointment_date: appointmentDateTime.toISOString(),
-        consultation_fee: fee,
-        notes: notes
-      });
+      // Insert appointment into database
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert({
+          patient_id: userId,
+          doctor_id: selectedDoctor,
+          appointment_type: appointmentType,
+          appointment_date: appointmentDateTime.toISOString(),
+          consultation_fee: fee,
+          notes: notes,
+          status: 'pending'
+        })
+        .select()
+        .single();
 
-      toast.success("Appointment booked successfully!");
+      if (error) {
+        console.error('Error booking appointment:', error);
+        toast.error("Failed to book appointment. Please try again.");
+        return;
+      }
+
+      toast.success("Appointment booked successfully! The doctor will be notified.", {
+        description: "You'll receive a confirmation once the doctor accepts."
+      });
       
       // Reset form
       setSelectedDoctor("");
@@ -126,6 +180,7 @@ export const AppointmentBooking = ({ userId, onBookingComplete }: AppointmentBoo
       setNotes("");
       onBookingComplete?.();
     } catch (error) {
+      console.error('Error:', error);
       toast.error("Failed to book appointment");
     } finally {
       setLoading(false);

@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          id: string
+          patient_id: string
+          doctor_id: string
+          appointment_type: string
+          appointment_date: string
+          status: string
+          consultation_fee: number | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          patient_id: string
+          doctor_id: string
+          appointment_type: string
+          appointment_date: string
+          status?: string
+          consultation_fee?: number | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          patient_id?: string
+          doctor_id?: string
+          appointment_type?: string
+          appointment_date?: string
+          status?: string
+          consultation_fee?: number | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       consultations: {
         Row: {
           ai_analysis: string | null
