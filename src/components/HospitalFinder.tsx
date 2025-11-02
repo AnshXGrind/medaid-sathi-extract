@@ -184,15 +184,54 @@ export const HospitalFinder = () => {
     setLocationError(null);
 
     try {
-      // Use Nominatim API to geocode the search query
+      // Improved geocoding with better query parameters
+      // If it's a 6-digit number, treat as pincode
+      const isPincode = /^\d{6}$/.test(searchQuery.trim());
+      
+      let query = searchQuery;
+      if (isPincode) {
+        query = `Pincode ${searchQuery}, India`;
+      } else {
+        query = `${searchQuery}, India`;
+      }
+      
+      // Use Nominatim API with improved parameters
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)},India&limit=1`
+        `https://nominatim.openstreetmap.org/search?` +
+        `format=json&` +
+        `q=${encodeURIComponent(query)}&` +
+        `countrycodes=in&` +
+        `limit=5&` +
+        `addressdetails=1`
       );
       
       const data = await response.json();
       
       if (data && data.length > 0) {
-        const { lat, lon } = data[0];
+        // Filter results for better accuracy
+        let bestMatch = data[0];
+        
+        if (isPincode) {
+          // For pincodes, prefer results that mention postal/postcode
+          const postalMatch = data.find((item: { type?: string; category?: string }) => 
+            item.type === 'postcode' || 
+            item.category === 'place' ||
+            item.type === 'postal_code'
+          );
+          if (postalMatch) {
+            bestMatch = postalMatch;
+          }
+        } else {
+          // For area names, prefer populated places
+          const placeMatch = data.find((item: { type?: string }) => 
+            ['city', 'town', 'village', 'suburb', 'neighbourhood'].includes(item.type || '')
+          );
+          if (placeMatch) {
+            bestMatch = placeMatch;
+          }
+        }
+        
+        const { lat, lon } = bestMatch;
         const latitude = parseFloat(lat);
         const longitude = parseFloat(lon);
         
@@ -201,10 +240,12 @@ export const HospitalFinder = () => {
         toast.success(`Found location for "${searchQuery}"`);
       } else {
         toast.error("Location not found. Please try a different pincode or area.");
+        setHospitals(mockHospitals);
       }
     } catch (error) {
       console.error("Geocoding error:", error);
       toast.error("Failed to search location. Please try again.");
+      setHospitals(mockHospitals);
     } finally {
       setSearchLoading(false);
     }

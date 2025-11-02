@@ -16,7 +16,7 @@ import GovernmentHealthHeatmap from "@/components/GovernmentHealthHeatmap";
 import JanAushadhiStockTracker from "@/components/JanAushadhiStockTracker";
 import SubsidyEligibilityChecker from "@/components/SubsidyEligibilityChecker";
 import VillageMode from "@/components/VillageMode";
-import { Brain, Video, MapPin, FileText, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Activity, Wifi, Download } from "lucide-react";
+import { Brain, Video, MapPin, FileText, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Activity, Wifi, Download, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { maskAadhaar } from "@/lib/aadhaar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Badge } from "@/components/ui/badge";
 
 interface Consultation {
   id: string;
@@ -32,11 +33,23 @@ interface Consultation {
   created_at: string;
 }
 
+interface Appointment {
+  id: string;
+  doctor_id: string;
+  appointment_type: string;
+  appointment_date: string;
+  status: string;
+  consultation_fee: number;
+  notes?: string;
+  created_at: string;
+}
+
 const PatientDashboard = () => {
   const [symptoms, setSymptoms] = useState("");
   const [analysis, setAnalysis] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [aadhaarNumber, setAadhaarNumber] = useState<string>("");
   const [patientName, setPatientName] = useState<string>("");
   const [villageModeEnabled, setVillageModeEnabled] = useState(false);
@@ -60,17 +73,29 @@ const PatientDashboard = () => {
       .from("consultations")
       .select("*")
       .eq("patient_id", user?.id)
-      .order("created_at", { ascending: false })
-      .limit(5);
+      .order("created_at", { ascending: false });
 
     if (!error && data) {
       setConsultations(data);
     }
   };
 
+  const loadAppointments = async () => {
+    const { data, error } = await supabase
+      .from("appointments")
+      .select("*")
+      .eq("patient_id", user?.id)
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setAppointments(data);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadConsultations();
+      loadAppointments();
       loadUserData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -398,6 +423,126 @@ provider with any questions regarding a medical condition.
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
+          <Card className="shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <Activity className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Total</p>
+                  <p className="text-xl font-bold">{consultations.length}</p>
+                  <p className="text-xs text-muted-foreground">Consultations</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-100 dark:bg-amber-900 rounded-lg">
+                  <Clock className="h-5 w-5 text-amber-600 dark:text-amber-300" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Pending</p>
+                  <p className="text-xl font-bold">{appointments.filter(a => a.status === 'pending').length}</p>
+                  <p className="text-xs text-muted-foreground">Appointments</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-300" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Completed</p>
+                  <p className="text-xl font-bold">{appointments.filter(a => a.status === 'completed').length}</p>
+                  <p className="text-xs text-muted-foreground">Sessions</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                  <FileText className="h-5 w-5 text-purple-600 dark:text-purple-300" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Health</p>
+                  <p className="text-xl font-bold">{consultations.length + appointments.length}</p>
+                  <p className="text-xs text-muted-foreground">Records</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Upcoming Appointments Section */}
+        {appointments.length > 0 && (
+          <Card className="mb-4 md:mb-6 shadow-md">
+            <CardHeader className="p-4 md:p-6">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <CardTitle className="text-base md:text-lg">Your Appointments</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6 space-y-3">
+              {appointments.slice(0, 5).map((appointment) => (
+                <div
+                  key={appointment.id}
+                  className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${
+                      appointment.status === 'confirmed' ? 'bg-green-100 dark:bg-green-900' :
+                      appointment.status === 'pending' ? 'bg-amber-100 dark:bg-amber-900' :
+                      'bg-gray-100 dark:bg-gray-800'
+                    }`}>
+                      {appointment.status === 'confirmed' ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : appointment.status === 'pending' ? (
+                        <Clock className="h-4 w-4 text-amber-600" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-gray-600" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">
+                        {appointment.appointment_type === 'video' ? 'Video Consultation' : 'In-Person Visit'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(appointment.appointment_date).toLocaleString('en-IN', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant={
+                      appointment.status === 'confirmed' ? 'default' :
+                      appointment.status === 'pending' ? 'secondary' :
+                      'outline'
+                    }>
+                      {appointment.status}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-1">₹{appointment.consultation_fee}</p>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
         )}
