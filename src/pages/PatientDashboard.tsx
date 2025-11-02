@@ -16,7 +16,6 @@ import GovernmentHealthHeatmap from "@/components/GovernmentHealthHeatmap";
 import JanAushadhiStockTracker from "@/components/JanAushadhiStockTracker";
 import SubsidyEligibilityChecker from "@/components/SubsidyEligibilityChecker";
 import VillageMode from "@/components/VillageMode";
-import MultiLanguageVoice from "@/components/MultiLanguageVoice";
 import { Brain, Video, MapPin, FileText, Send, Loader2, CreditCard, User as UserIcon, Calendar, Upload, Heart, Pill, BadgeIndianRupee, Activity, Wifi, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -357,14 +356,7 @@ provider with any questions regarding a medical condition.
     return analysis;
   };
 
-  const handleVoiceTranscript = (text: string, language: string) => {
-    setSymptoms(prev => prev ? `${prev} ${text}` : text);
-    toast.success(`Voice recorded in ${language}!`);
-  };
-
-  const startRecording = async () => {
-    toast.info("🎤 Please use the Smart Voice Assistant in the Voice tab for multi-language support!");
-  };
+  // Voice assistant removed - transcript handled via text input only
 
   return (
     <div className="min-h-screen bg-background">
@@ -445,11 +437,7 @@ provider with any questions regarding a medical condition.
 
           {/* AI Symptom Analysis Tab */}
           <TabsContent value="symptoms" className="space-y-4">
-            {/* Voice Assistant - Now at top of AI Analysis */}
-            <MultiLanguageVoice 
-              onTranscript={handleVoiceTranscript}
-              isActive={true}
-            />
+            {/* Voice assistant removed — use text input below to enter symptoms */}
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
               {/* AI Symptom Analysis */}
