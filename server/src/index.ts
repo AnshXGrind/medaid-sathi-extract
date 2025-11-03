@@ -18,6 +18,8 @@ import abhaRoutes from './routes/abha.js';
 import auditRoutes from './routes/audit.js';
 import analyticsRoutes from './routes/analytics.js';
 import healthRoutes from './routes/health.js';
+import consentRoutes from './routes/consent.js';
+import recordsRoutes from './routes/records.js';
 
 // Jobs
 import { startCronJobs } from './jobs/index.js';
@@ -86,6 +88,8 @@ app.use('/api/health', healthRoutes);
 app.use('/api/auth/abha', abhaRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/consent', consentRoutes);
+app.use('/api/records', recordsRoutes);
 
 // Root endpoint
 app.get('/', (req: Request, res: Response) => {
