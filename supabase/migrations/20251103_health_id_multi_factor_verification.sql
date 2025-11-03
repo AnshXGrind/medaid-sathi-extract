@@ -1,4 +1,4 @@
--- Migration: Add Health ID and Multi-Factor Verification Columns
+i d-- Migration: Add Health ID and Multi-Factor Verification Columns
 -- Description: Replace Aadhaar with Health ID (ABHA) and add support for multiple government IDs
 -- Created: 2025-11-03
 
