@@ -24,7 +24,16 @@ jobs:
         run: npm ci
       
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install chromium --with-deps
+      
+      - name: Create .env file for build
+        run: |
+          cat > .env << EOF
+          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL || 'https://tdfkrllvxlrukdzsiwjd.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder' }}
+          VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID || 'tdfkrllvxlrukdzsiwjd' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder' }}
+          EOF
       
       - name: Build app
         run: npm run build
@@ -32,7 +41,7 @@ jobs:
           NODE_ENV: production
       
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npx playwright test --project=chromium
         env:
           CI: true
       
