@@ -39,22 +39,14 @@ const Auth = () => {
   // Redirect authenticated users
   useEffect(() => {
     if (user) {
-      // Check user role and redirect
-      const checkRoleAndRedirect = async () => {
-        const { data } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .single();
-        
-        if (data?.role === "doctor") {
-          navigate("/doctor-dashboard");
-        } else {
-          navigate("/patient-dashboard");
-        }
-      };
+      // Check user role from metadata and redirect
+      const userRole = user.user_metadata?.role;
       
-      checkRoleAndRedirect();
+      if (userRole === "doctor") {
+        navigate("/doctor-dashboard");
+      } else {
+        navigate("/patient-dashboard");
+      }
     }
   }, [user, navigate]);
 

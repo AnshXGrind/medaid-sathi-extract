@@ -83,17 +83,12 @@ export const useAuth = () => {
 
       if (error) throw error;
 
-      // Get user role to redirect appropriately
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.user.id)
-        .single();
-
       toast.success("Signed in successfully!");
 
-      // Redirect based on role
-      if (roleData?.role === "doctor") {
+      // Try to get user role from metadata first
+      const userRole = data.user?.user_metadata?.role;
+      
+      if (userRole === "doctor") {
         navigate("/doctor-dashboard");
       } else {
         navigate("/patient-dashboard");
@@ -102,7 +97,7 @@ export const useAuth = () => {
       return { data, error: null };
     } catch (error: any) {
       console.error("Sign in error:", error);
-      toast.error(error.message || "Failed to sign in");
+      toast.error(error.message || "Invalid email or password");
       return { data: null, error };
     }
   };
