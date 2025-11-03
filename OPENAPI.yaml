@@ -1,0 +1,455 @@
+openapi: 3.0.3
+info:
+  title: MED-AID SAARTHI Server API
+  description: Secure server-side operations for ABHA/NDHM integration, token management, and audit logging
+  version: 2.0.0
+  contact:
+    name: MED-AID SAARTHI Team
+    email: api@medaid-saarthi.in
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://api.medaid-saarthi.in
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check and monitoring endpoints
+  - name: ABHA
+    description: ABHA/NDHM OAuth and token management
+  - name: Audit
+    description: Audit log access for government auditors
+  - name: Analytics
+    description: Privacy-preserving health analytics
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Returns server health status and version
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Server is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/auth/abha/initiate:
+    post:
+      tags:
+        - ABHA
+      summary: Initiate ABHA number creation
+      description: Start ABHA linking process with Aadhaar OTP
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitiateAbhaRequest'
+      responses:
+        '200':
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiateAbhaResponse'
+        '400':
+          description: Invalid request or consent not given
+        '500':
+          description: Server error
+
+  /api/auth/abha/callback:
+    get:
+      tags:
+        - ABHA
+      summary: ABHA OAuth callback
+      description: Handles OAuth callback from ABDM after user authentication
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to frontend with success/error
+        '400':
+          description: Invalid state parameter
+        '500':
+          description: Token exchange failed
+
+  /api/auth/abha/refresh:
+    post:
+      tags:
+        - ABHA
+      summary: Refresh ABHA access token
+      description: Get new access token using refresh token
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+              required:
+                - userId
+      responses:
+        '200':
+          description: Token refreshed successfully
+        '404':
+          description: No tokens found for user
+        '500':
+          description: Refresh failed
+
+  /api/auth/abha/status/{userId}:
+    get:
+      tags:
+        - ABHA
+      summary: Check ABHA link status
+      description: Returns whether user has linked ABHA and token status
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbhaStatusResponse'
+
+  /api/audit/logs:
+    get:
+      tags:
+        - Audit
+      summary: Get audit logs
+      description: Stream audit logs with pagination (gov_auditor role required)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: Audit logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogsResponse'
+        '403':
+          description: Insufficient permissions
+        '500':
+          description: Server error
+
+  /api/audit/logs/{id}:
+    get:
+      tags:
+        - Audit
+      summary: Get specific audit log entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Audit log entry retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogEntry'
+        '404':
+          description: Audit log not found
+
+  /api/audit/verify:
+    get:
+      tags:
+        - Audit
+      summary: Verify audit chain integrity
+      description: Checks hash chaining to detect tampering
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Chain verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChainVerificationResponse'
+
+  /api/analytics/district/{districtId}:
+    get:
+      tags:
+        - Analytics
+      summary: Get district health statistics
+      description: Returns anonymized health data for district (k-anonymity applied)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: districtId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Statistics retrieved (if meets k-anonymity threshold)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistrictStatsResponse'
+
+  /api/analytics/disease-trends:
+    get:
+      tags:
+        - Analytics
+      summary: Get disease prevalence trends
+      description: Anonymized disease trends across regions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Disease trends retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiseaseTrendsResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+        version:
+          type: string
+        checks:
+          type: object
+          properties:
+            server:
+              type: string
+            database:
+              type: string
+            abha:
+              type: string
+
+    InitiateAbhaRequest:
+      type: object
+      required:
+        - userId
+        - aadhaarNumber
+        - consentGiven
+      properties:
+        userId:
+          type: string
+          format: uuid
+        aadhaarNumber:
+          type: string
+          pattern: '^[0-9]{12}$'
+          description: 12-digit Aadhaar number
+        consentGiven:
+          type: boolean
+          description: User must explicitly consent
+
+    InitiateAbhaResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        authUrl:
+          type: string
+          format: uri
+        state:
+          type: string
+        message:
+          type: string
+
+    AbhaStatusResponse:
+      type: object
+      properties:
+        linked:
+          type: boolean
+        healthIdDisplay:
+          type: string
+          example: '**-****-****-1234'
+        name:
+          type: string
+        tokenExpired:
+          type: boolean
+        lastRefreshed:
+          type: string
+          format: date-time
+
+    AuditLogEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        actor:
+          type: string
+        action:
+          type: string
+        targetId:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+        prevHash:
+          type: string
+        hash:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AuditLogsResponse:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLogEntry'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+
+    ChainVerificationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        brokenLinks:
+          type: array
+          items:
+            type: integer
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    DistrictStatsResponse:
+      type: object
+      properties:
+        district:
+          type: string
+        available:
+          type: boolean
+        statistics:
+          type: object
+          properties:
+            totalConsultations:
+              type: integer
+            commonSymptoms:
+              type: array
+              items:
+                type: object
+            avgConsultationDuration:
+              type: integer
+            monthlyTrend:
+              type: array
+        metadata:
+          type: object
+          properties:
+            lastUpdated:
+              type: string
+              format: date-time
+            recordCount:
+              type: integer
+            privacyCompliant:
+              type: boolean
+
+    DiseaseTrendsResponse:
+      type: object
+      properties:
+        trends:
+          type: array
+          items:
+            type: object
+            properties:
+              disease_name:
+                type: string
+              case_count:
+                type: integer
+              trend:
+                type: string
+        privacyNote:
+          type: string
+        lastUpdated:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
