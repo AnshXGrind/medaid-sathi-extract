@@ -25,7 +25,19 @@ import CreateHealthID from "./pages/CreateHealthID";
 import EnhancedVaccinationReminder from "./pages/EnhancedVaccinationReminder";
 import OffersPage from "./pages/OffersPage";
 
-const queryClient = new QueryClient();
+// Optimized QueryClient configuration for better performance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+      retry: 1, // Reduce retries for faster failure
+      refetchOnWindowFocus: false, // Reduce unnecessary refetches
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

@@ -11,13 +11,44 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    hmr: {
+      overlay: false // Disable error overlay for better performance
+    }
+  },
+  // Optimize build for better performance
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          'supabase': ['@supabase/supabase-js'],
+          'query': ['@tanstack/react-query']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      '@tanstack/react-query'
+    ],
+    exclude: ['lovable-tagger']
   },
   plugins: [
     react(), 
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt', 'icons/*.png'],
+      includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
         name: 'MedAid Sathi - Healthcare Platform',
         short_name: 'MedAid',
@@ -41,69 +72,31 @@ export default defineConfig(({ mode }) => ({
             type: 'image/png',
             purpose: 'any maskable'
           }
-        ],
-        categories: ['health', 'medical', 'healthcare', 'lifestyle'],
-        shortcuts: [
-          {
-            name: 'Health Records',
-            short_name: 'Records',
-            description: 'Access your digital health records',
-            url: '/health-records',
-            icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }]
-          },
-          {
-            name: 'Emergency',
-            short_name: 'Emergency',
-            description: 'Quick access to emergency services',
-            url: '/emergency',
-            icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }]
-          }
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        maximumFileSizeToCacheInBytes: 3000000, // 3MB limit
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-cache',
+              cacheName: 'supabase-api-cache',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 5 // 5 minutes
               },
               cacheableResponse: {
                 statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/.*\.googleapis\.com\/.*/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'google-apis-cache',
-              expiration: {
-                maxEntries: 20,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
-              }
+              },
+              networkTimeoutSeconds: 10
             }
           }
         ]
       },
       devOptions: {
-        enabled: true,
-        type: 'module'
+        enabled: false // Disable PWA in development for better performance
       }
     })
   ].filter(Boolean),
