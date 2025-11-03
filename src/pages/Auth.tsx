@@ -7,11 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, User, Stethoscope, Loader2, CreditCard, Mail } from "lucide-react";
+import { Activity, User, Stethoscope, Loader2, CreditCard, Mail, Shield } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { validateAadhaar, formatAadhaar, getAadhaarError } from "@/lib/aadhaar";
+import { validateHealthId, formatHealthId, getHealthIdError } from "@/lib/healthId";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -28,8 +28,8 @@ const Auth = () => {
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
   const [medicalId, setMedicalId] = useState("");
-  const [aadhaarNumber, setAadhaarNumber] = useState("");
-  const [aadhaarError, setAadhaarError] = useState<string | null>(null);
+  const [healthIdNumber, setHealthIdNumber] = useState("");
+  const [healthIdError, setHealthIdError] = useState<string | null>(null);
 
   // Forgot Password State
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -100,17 +100,17 @@ const Auth = () => {
       return;
     }
 
-    // Validate Aadhaar for patients
+    // Validate Health ID for patients
     if (userType === "patient") {
-      if (!aadhaarNumber) {
-        toast.error("Aadhaar number is required for government healthcare");
+      if (!healthIdNumber) {
+        toast.error("Health ID is required for government healthcare");
         return;
       }
       
-      const aadhaarValidationError = getAadhaarError(aadhaarNumber);
-      if (aadhaarValidationError) {
-        setAadhaarError(aadhaarValidationError);
-        toast.error(aadhaarValidationError);
+      const healthIdValidationError = getHealthIdError(healthIdNumber);
+      if (healthIdValidationError) {
+        setHealthIdError(healthIdValidationError);
+        toast.error(healthIdValidationError);
         return;
       }
     }
@@ -126,7 +126,7 @@ const Auth = () => {
     }
 
     setLoading(true);
-    await signUp(signUpEmail, signUpPassword, signUpName, userType, medicalId, aadhaarNumber);
+    await signUp(signUpEmail, signUpPassword, signUpName, userType, medicalId, healthIdNumber);
     setLoading(false);
   };
   return (
@@ -264,34 +264,34 @@ const Auth = () => {
                     </div>
                     {userType === "patient" && (
                       <div className="space-y-2">
-                        <Label htmlFor="aadhaar" className="flex items-center gap-2">
-                          <CreditCard className="h-4 w-4" />
-                          Aadhaar Number (Government ID)
+                        <Label htmlFor="healthId" className="flex items-center gap-2">
+                          <Shield className="h-4 w-4" />
+                          ABHA Health ID (Government ID)
                         </Label>
                         <Input 
-                          id="aadhaar" 
+                          id="healthId" 
                           type="text" 
-                          placeholder="XXXX XXXX XXXX"
-                          maxLength={14}
-                          className={`transition-smooth ${aadhaarError ? 'border-red-500' : ''}`}
-                          value={aadhaarNumber}
+                          placeholder="XXXX-XXXX-XXXX-XX"
+                          maxLength={17}
+                          className={`transition-smooth ${healthIdError ? 'border-red-500' : ''}`}
+                          value={healthIdNumber}
                           onChange={(e) => {
-                            const formatted = formatAadhaar(e.target.value);
-                            setAadhaarNumber(formatted);
-                            setAadhaarError(null);
+                            const formatted = formatHealthId(e.target.value);
+                            setHealthIdNumber(formatted);
+                            setHealthIdError(null);
                           }}
                           onBlur={() => {
-                            const error = getAadhaarError(aadhaarNumber);
-                            setAadhaarError(error);
+                            const error = getHealthIdError(healthIdNumber);
+                            setHealthIdError(error);
                           }}
                           disabled={loading}
                           required
                         />
-                        {aadhaarError && (
-                          <p className="text-sm text-red-500">{aadhaarError}</p>
+                        {healthIdError && (
+                          <p className="text-sm text-red-500">{healthIdError}</p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                          Required for government healthcare services
+                          Required for government healthcare services (14 digits)
                         </p>
                       </div>
                     )}

@@ -36,7 +36,7 @@ export const useAuth = () => {
     fullName: string, 
     userType: "patient" | "doctor", 
     medicalId?: string,
-    aadhaarNumber?: string
+    healthIdNumber?: string
   ) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -50,7 +50,7 @@ export const useAuth = () => {
             full_name: fullName,
             role: userType,
             ...(medicalId && { medical_id: medicalId }),
-            ...(aadhaarNumber && { aadhaar_number: aadhaarNumber })
+            ...(healthIdNumber && { health_id_number: healthIdNumber })
           }
         }
       });
@@ -67,26 +67,40 @@ export const useAuth = () => {
       }
 
       return { data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Sign up error:", error);
-      toast.error(error.message || "Failed to create account");
+      const errorMessage = error instanceof Error ? error.message : "Failed to create account";
+      toast.error(errorMessage);
       return { data: null, error };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('🔐 Attempting sign in...');
+      console.log('Email:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      console.log('Sign in response:', { data, error });
+
+      if (error) {
+        console.error('Sign in error:', error);
+        throw error;
+      }
+
+      if (!data.user) {
+        throw new Error('No user data returned');
+      }
 
       toast.success("Signed in successfully!");
 
       // Try to get user role from metadata first
       const userRole = data.user?.user_metadata?.role;
+      console.log('User role:', userRole);
       
       if (userRole === "doctor") {
         navigate("/doctor-dashboard");
@@ -95,9 +109,10 @@ export const useAuth = () => {
       }
 
       return { data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Sign in error:", error);
-      toast.error(error.message || "Invalid email or password");
+      const errorMessage = error instanceof Error ? error.message : "Invalid email or password";
+      toast.error(errorMessage);
       return { data: null, error };
     }
   };
@@ -110,9 +125,10 @@ export const useAuth = () => {
       toast.success("Signed out successfully!");
       navigate("/");
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Sign out error:", error);
-      toast.error(error.message || "Failed to sign out");
+      const errorMessage = error instanceof Error ? error.message : "Failed to sign out";
+      toast.error(errorMessage);
       return { error };
     }
   };

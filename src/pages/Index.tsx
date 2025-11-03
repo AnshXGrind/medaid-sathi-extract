@@ -8,6 +8,7 @@ import HealthNews from "@/components/HealthNews";
 import GovtSchemes from "@/components/GovtSchemes";
 import SOSButton from "@/components/SOSButton";
 import VillageMode from "@/components/VillageMode";
+import GovtSchemesBubble from "@/components/GovtSchemesBubble";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Stethoscope, 
@@ -34,6 +35,9 @@ const Index = () => {
       
       {/* SOS Emergency Button */}
       <SOSButton />
+      
+      {/* Government Schemes Floating Bubble */}
+      <GovtSchemesBubble />
       
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">

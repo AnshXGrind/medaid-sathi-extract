@@ -6,12 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import SearchBar from "@/components/SearchBar";
-import FloatingBubbles from "@/components/FloatingBubbles";
+import GovtSchemesBubble from "@/components/GovtSchemesBubble";
+import HealthIDVerification from "@/components/HealthIDVerification";
 import HealthNews from "@/components/HealthNews";
 import GovtSchemes from "@/components/GovtSchemes";
 import SOSButton from "@/components/SOSButton";
-import AadhaarUpload from "@/components/AadhaarUpload";
-import SecureAadhaarVerification from "@/components/SecureAadhaarVerification";
 import ABHAIntegration from "@/components/ABHAIntegration";
 import EmergencyRouting from "@/components/EmergencyRouting";
 import HealthInsightsDashboard from "@/components/HealthInsightsDashboard";
@@ -392,7 +391,7 @@ provider with any questions regarding a medical condition.
     <div className="min-h-screen bg-background">
       <Navbar />
       <DashboardSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-      <FloatingBubbles />
+      <GovtSchemesBubble />
       
       {/* SOS Emergency Button */}
       <SOSButton />
@@ -799,21 +798,21 @@ provider with any questions regarding a medical condition.
 
           {/* Security & Privacy Tab - ABHA Integration */}
           <TabsContent value="security" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Secure Aadhaar Verification */}
+            <div className="grid grid-cols-1 gap-4">
+              {/* Multi-Factor Identity Verification */}
               <div>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <Shield className="h-5 w-5 text-primary" />
-                  Privacy-First Aadhaar Verification
+                  Government ID Verification
                 </h3>
-                {user && <SecureAadhaarVerification userId={user.id} />}
+                {user && <HealthIDVerification userId={user.id} />}
               </div>
 
               {/* ABHA Integration */}
               <div>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-primary" />
-                  ABHA Health ID
+                  ABHA Health ID Integration
                 </h3>
                 {user && <ABHAIntegration userId={user.id} />}
               </div>
