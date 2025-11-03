@@ -1,103 +1,138 @@
-# Security Policy
+# Security Policy - MED-AID SAARTHI v2.0
 
 ## 🔒 Security Commitment
 
-MedAid Sathi takes security seriously, especially given we handle sensitive health data and PII (Personally Identifiable Information). This document outlines our security practices, compliance measures, and vulnerability reporting process.
+MedAid Sathi v2.0 implements **production-grade security, privacy, and compliance** for handling sensitive healthcare data. This document outlines our comprehensive security architecture, GDPR/DPDP compliance measures, and vulnerability reporting process.
+
+**Version**: 2.0.0  
+**Last Updated**: November 3, 2025  
+**Compliance**: DPDP Act 2023, GDPR, HIPAA-aligned, NDHM/ABDM standards
 
 ---
 
-## 🛡️ Security Features
+## 🛡️ Security Architecture v2.0
 
-### 1. **Zero Raw Aadhaar Storage**
+### 1. **Enhanced Cryptographic Security**
 
-We implement **zero-knowledge Aadhaar handling**:
-
-- ✅ **HMAC-SHA256** with server secret (not plain SHA-256)
-- ✅ **No rainbow table attacks** - uses secret key from KMS
-- ✅ **Only last 4 digits stored** for display (masked as `XXXX-XXXX-1234`)
-- ✅ **Raw Aadhaar never logged** or written to disk
+#### HMAC-SHA256 with Server-Held Keys
+- ✅ **HMAC-SHA256** with 64-character minimum secrets
+- ✅ **Envelope encryption** for PHI (Personal Health Information)
+- ✅ **Key rotation** support with versioned encryption keys
+- ✅ **Zero-knowledge storage** - full document numbers never stored
 - ✅ **Constant-time comparison** prevents timing attacks
-- ✅ **Audit trail** for all Aadhaar operations
+- ✅ **Immutable audit trail** for all cryptographic operations
 
-**Implementation**: See `src/lib/secureAadhaar.ts`
+**Implementation**:
+- `src/config/security.ts` - Core cryptographic functions
+- `src/config/privacy.ts` - Privacy-safe logging and anonymization
 
-**UIDAI Compliance**: Follows Aadhaar (Sharing of Information) Regulations, 2016
+#### Encryption Standards:
+| Data Type | Algorithm | Key Management |
+|-----------|-----------|----------------|
+| Aadhaar Hash | HMAC-SHA256 | Server-held secret (64+ chars) |
+| Health ID | HMAC-SHA256 | Server-held secret (64+ chars) |
+| PHI Records | AES-256-GCM | Envelope encryption + KMS |
+| JWT Tokens | HMAC-SHA256 | Separate signing keys |
+| File Uploads | AES-256-GCM | Per-file encryption keys |
 
-### 2. **Row Level Security (RLS)**
+### 2. **JWT Token Management (v2.0)**
 
-All Supabase tables with PII have RLS enabled:
+#### Short-Lived Access Tokens
+- ✅ **Access tokens**: 15 minutes expiry
+- ✅ **Refresh tokens**: 7 days expiry with rotation
+- ✅ **Session management**: Server-side session tracking
+- ✅ **Automatic revocation**: On logout or suspicious activity
+- ✅ **Device tracking**: Per-device session management
 
-```sql
--- Example: patients table
-ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;
+**Implementation**: `src/config/security.ts`
 
-CREATE POLICY user_own_data ON public.patients
-  FOR ALL
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+```typescript
+// Generate tokens with automatic expiry
+const accessToken = Security.generateAccessToken(payload);
+const refreshToken = Security.generateRefreshToken(payload);
 
-CREATE POLICY service_role_full_access ON public.patients
-  FOR ALL
-  USING (auth.role() = 'service_role')
-  WITH CHECK (auth.role() = 'service_role');
+// Verify and refresh
+const payload = Security.verifyToken(token);
 ```
 
-**Tables with RLS**:
-- `patients` - Patient profiles and metadata
-- `health_records` - Medical records and documents
-- `appointments` - Appointment data
-- `prescriptions` - Prescription information
-- `audit_logs` - Security audit trail
+### 3. **Row Level Security (RLS) - Enhanced**
 
-### 3. **Environment Security**
+All Supabase tables with PII have strict RLS policies:
 
-**Required Secrets** (never commit to repo):
+```sql
+-- Enhanced RLS with role-based access
+CREATE POLICY "Patients view own data"
+  ON profiles FOR SELECT
+  USING (auth.uid() = id AND deleted_at IS NULL);
+
+CREATE POLICY "Doctors view assigned patients"
+  ON health_records FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM consultations
+      WHERE doctor_id = auth.uid()
+        AND patient_id = health_records.patient_id
+        AND status IN ('pending', 'in_progress')
+    )
+  );
+
+CREATE POLICY "Admins read-only audit logs"
+  ON verification_audit_log FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM user_roles
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
+  );
+```
+
+**RLS-Protected Tables**:
+- ✅ `profiles` - User profiles with encrypted PHI
+- ✅ `health_records` - Medical records with envelope encryption
+- ✅ `appointments` - Appointment scheduling data
+- ✅ `prescriptions` - Encrypted prescriptions
+- ✅ `consultations` - Doctor-patient consultations
+- ✅ `consent_logs` - GDPR/DPDP consent tracking
+- ✅ `user_sessions` - JWT refresh token management
+- ✅ `secure_file_uploads` - File upload security tracking
+- ✅ `verification_audit_log` - Immutable audit trail
+
+### 4. **Environment Security (v2.0)**
+
+**Required Secrets** (NEVER commit):
 
 ```env
-# .env (NEVER COMMIT THIS FILE)
+# Encryption & Security (min 64 characters each)
+VITE_ENCRYPTION_MASTER_KEY=generate-with-crypto-randomBytes-64
+VITE_AADHAAR_HMAC_SECRET=generate-with-crypto-randomBytes-64
+VITE_JWT_SECRET=generate-with-crypto-randomBytes-64
+VITE_JWT_REFRESH_SECRET=generate-with-crypto-randomBytes-64
 
-# Supabase (rotate if exposed)
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-key  # Server-side only!
+# JWT Expiry (seconds)
+VITE_JWT_ACCESS_TOKEN_EXPIRY=900         # 15 minutes
+VITE_JWT_REFRESH_TOKEN_EXPIRY=604800     # 7 days
 
-# Aadhaar HMAC (min 32 chars, from KMS in production)
-VITE_AADHAAR_HMAC_SECRET=your-secure-random-secret-min-32-chars
+# Rate Limiting
+VITE_MAX_LOGIN_ATTEMPTS=5
+VITE_LOCKOUT_DURATION_MINUTES=15
 
-# Google Maps (restrict by domain/IP)
-VITE_GOOGLE_MAPS_API_KEY=your-maps-key
+# Compliance
+VITE_CONSENT_VERSION=1.0.0
+VITE_DATA_RETENTION_DAYS=2555            # 7 years
+VITE_AUDIT_LOG_RETENTION_DAYS=3650       # 10 years
+```
 
-# NDHM/ABHA (from NDHM sandbox/production)
-VITE_NDHM_CLIENT_ID=your-ndhm-client-id
-VITE_NDHM_CLIENT_SECRET=your-ndhm-secret
+**Secret Generation**:
+```bash
+# Generate secure secrets (64 characters)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 **Secret Management**:
-- Development: Use `.env.local` (gitignored)
-- Staging/Production: Use **Vercel secrets**, **AWS KMS**, or **Supabase Vault**
-- Rotate secrets quarterly or after exposure
-
-### 4. **NDHM/ABHA Integration Security**
-
-- ✅ OAuth 2.0 authorization flow with PKCE
-- ✅ Consent tokens stored encrypted
-- ✅ ABHA address never stored in plain text
-- ✅ Health records fetched on-demand (not cached)
-- ✅ M3 consent flows for data sharing
-
-**Note**: NDHM production requires formal onboarding and sandbox testing.
-
-### 5. **Data Protection Measures**
-
-| Data Type | Storage Method | Access Control |
-|-----------|---------------|----------------|
-| Aadhaar Number | **NEVER stored** (HMAC only) | N/A |
-| ABHA Address | Encrypted at rest | User + service role |
-| Health Records | Encrypted at rest (Supabase) | RLS by user_id |
-| Session Tokens | HTTP-only cookies | 24hr expiry |
-| Audit Logs | Append-only table | Service role only |
-
-### 6. **Frontend Security**
+- Development: `.env.local` (gitignored)
+- Staging: Vercel/Netlify environment variables
+- Production: AWS KMS, HashiCorp Vault, or Supabase Vault
+- **Rotate secrets**: Quarterly or immediately after exposure
 
 - ✅ **HTTPS only** in production (enforced by Netlify/Vercel)
 - ✅ **Content Security Policy** (CSP) headers

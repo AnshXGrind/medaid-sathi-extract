@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, User, Stethoscope, Loader2, CreditCard, Mail, Shield } from "lucide-react";
+import { Activity, User, Stethoscope, Loader2, CreditCard, Mail, Shield, FileText } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { validateHealthId, formatHealthId, getHealthIdError } from "@/lib/healthId";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { HealthIdCreationDialog } from "@/components/HealthIdCreationDialog";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -35,6 +37,10 @@ const Auth = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  
+  // Health ID Creation Mode
+  const [showHealthIdCreation, setShowHealthIdCreation] = useState(false);
+  const [createHealthIdMode, setCreateHealthIdMode] = useState(false);
 
   // Redirect authenticated users
   useEffect(() => {
@@ -290,9 +296,27 @@ const Auth = () => {
                         {healthIdError && (
                           <p className="text-sm text-red-500">{healthIdError}</p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          Required for government healthcare services (14 digits)
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-muted-foreground">
+                            Required for government healthcare services (14 digits)
+                          </p>
+                          <Button
+                            type="button"
+                            variant="link"
+                            size="sm"
+                            className="text-xs text-primary hover:text-primary/80 p-0 h-auto"
+                            onClick={() => setShowHealthIdCreation(true)}
+                          >
+                            <FileText className="h-3 w-3 mr-1" />
+                            Create with Govt Docs
+                          </Button>
+                        </div>
+                        <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                          <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <AlertDescription className="text-xs">
+                            Don't have a Health ID? Create one using age-appropriate government documents with complete privacy protection.
+                          </AlertDescription>
+                        </Alert>
                       </div>
                     )}
                     {userType === "doctor" && (
@@ -411,6 +435,18 @@ const Auth = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Health ID Creation Dialog */}
+      <HealthIdCreationDialog
+        open={showHealthIdCreation}
+        onOpenChange={setShowHealthIdCreation}
+        onHealthIdGenerated={(healthId) => {
+          setHealthIdNumber(healthId);
+          setHealthIdError(null);
+          toast.success("Health ID created and added to the form!");
+          setShowHealthIdCreation(false);
+        }}
+      />
     </div>
   );
 };
