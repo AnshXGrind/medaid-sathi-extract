@@ -9,19 +9,30 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.
 // import { supabase } from "@/integrations/supabase/client";
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('Missing Supabase environment variables. Please check your .env.local file.');
-  console.error('VITE_SUPABASE_URL:', SUPABASE_URL ? 'Set' : 'Missing');
-  console.error('VITE_SUPABASE_ANON_KEY:', SUPABASE_ANON_KEY ? 'Set' : 'Missing');
+  console.error('❌ Missing Supabase environment variables!');
+  console.error('VITE_SUPABASE_URL:', SUPABASE_URL || 'MISSING');
+  console.error('VITE_SUPABASE_ANON_KEY:', SUPABASE_ANON_KEY ? 'Set ✓' : 'MISSING');
+} else {
+  console.log('✅ Supabase client configured');
+  console.log('URL:', SUPABASE_URL);
+  console.log('Key:', SUPABASE_ANON_KEY.substring(0, 20) + '...');
 }
 
 export const supabase = createClient<Database>(
-  SUPABASE_URL || 'https://placeholder.supabase.co',
-  SUPABASE_ANON_KEY || 'placeholder-key',
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
   {
     auth: {
       storage: localStorage,
       persistSession: true,
       autoRefreshToken: true,
-    }
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+    },
+    global: {
+      headers: {
+        'x-client-info': 'medaid-sathi-web',
+      },
+    },
   }
 );

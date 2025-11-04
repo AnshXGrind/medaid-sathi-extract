@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auth Debug</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+    h1 { color: #4CAF50; }
+    .test-section {
+      background: #2d2d2d;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border-left: 4px solid #4CAF50;
+    }
+    .result {
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+    }
+    .success { background-color: #1b5e20; border: 1px solid #4CAF50; }
+    .error { background-color: #b71c1c; border: 1px solid #f44336; }
+    .info { background-color: #01579b; border: 1px solid #2196F3; }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      background: #3d3d3d;
+      border: 1px solid #555;
+      border-radius: 5px;
+      color: #e0e0e0;
+      font-size: 14px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button:hover { background: #45a049; }
+    button:disabled { background: #666; cursor: not-allowed; }
+    pre {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #4CAF50;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 Authentication Debug Tool</h1>
+  
+  <div class="test-section">
+    <h2>1. Environment Variables Check</h2>
+    <div id="env-check"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. Supabase Connection Test</h2>
+    <button onclick="testConnection()">Test Connection</button>
+    <div id="connection-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. Sign In Test</h2>
+    <input type="email" id="email" placeholder="Email" value="test@example.com">
+    <input type="password" id="password" placeholder="Password" value="test123456">
+    <button onclick="testSignIn()" id="signInBtn">Sign In</button>
+    <div id="signin-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>4. Network Requests Log</h2>
+    <div id="network-log"></div>
+  </div>
+
+  <script type="module">
+    // Get env variables from Vite
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    console.log('🔍 Environment Check:');
+    console.log('URL:', SUPABASE_URL);
+    console.log('Key:', SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.substring(0, 20) + '...' : 'MISSING');
+    
+    // Display env variables
+    const envCheck = document.getElementById('env-check');
+    envCheck.innerHTML = `
+      <div class="result ${SUPABASE_URL ? 'success' : 'error'}">
+        <strong>VITE_SUPABASE_URL:</strong><br>
+        ${SUPABASE_URL || '❌ MISSING'}
+      </div>
+      <div class="result ${SUPABASE_ANON_KEY ? 'success' : 'error'}">
+        <strong>VITE_SUPABASE_ANON_KEY:</strong><br>
+        ${SUPABASE_ANON_KEY ? '✅ ' + SUPABASE_ANON_KEY.substring(0, 50) + '...' : '❌ MISSING'}
+      </div>
+    `;
+    
+    // Create Supabase client
+    const { createClient } = supabase;
+    let supabaseClient;
+    
+    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+      supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          storage: localStorage,
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          flowType: 'pkce',
+        }
+      });
+      
+      envCheck.innerHTML += `<div class="result success">✅ Supabase client created successfully</div>`;
+    } else {
+      envCheck.innerHTML += `<div class="result error">❌ Cannot create Supabase client - missing credentials</div>`;
+    }
+    
+    // Test connection
+    window.testConnection = async function() {
+      const resultDiv = document.getElementById('connection-result');
+      resultDiv.innerHTML = '<div class="loading"></div> Testing connection...';
+      
+      try {
+        if (!supabaseClient) {
+          throw new Error('Supabase client not initialized');
+        }
+        
+        // Test 1: Check auth
+        const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+        
+        if (sessionError) {
+          throw sessionError;
+        }
+        
+        resultDiv.innerHTML = `
+          <div class="result success">
+            ✅ <strong>Connection successful!</strong><br>
+            Session: ${sessionData.session ? 'Active' : 'None'}<br>
+            Auth endpoint: ${SUPABASE_URL}/auth/v1
+          </div>
+        `;
+        
+        // Test 2: Try a simple query
+        const { data, error } = await supabaseClient.from('profiles').select('count').limit(1);
+        
+        if (error) {
+          resultDiv.innerHTML += `<div class="result info">ℹ️ Database query: ${error.message}</div>`;
+        } else {
+          resultDiv.innerHTML += `<div class="result success">✅ Database accessible</div>`;
+        }
+        
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <div class="result error">
+            ❌ <strong>Connection failed!</strong><br>
+            Error: ${error.message}<br>
+            <pre>${JSON.stringify(error, null, 2)}</pre>
+          </div>
+        `;
+      }
+    };
+    
+    // Test sign in
+    window.testSignIn = async function() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const resultDiv = document.getElementById('signin-result');
+      const btn = document.getElementById('signInBtn');
+      
+      if (!email || !password) {
+        resultDiv.innerHTML = '<div class="result error">❌ Please enter email and password</div>';
+        return;
+      }
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Signing in...';
+      resultDiv.innerHTML = '';
+      
+      try {
+        if (!supabaseClient) {
+          throw new Error('Supabase client not initialized');
+        }
+        
+        console.log('🔐 Attempting sign in with:', email);
+        
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        console.log('📥 Sign in response:', { data, error });
+        
+        if (error) {
+          throw error;
+        }
+        
+        resultDiv.innerHTML = `
+          <div class="result success">
+            ✅ <strong>Sign in successful!</strong><br>
+            User: ${data.user.email}<br>
+            ID: ${data.user.id}<br>
+            Role: ${data.user.user_metadata?.role || 'Not set'}
+          </div>
+          <pre>${JSON.stringify(data.user, null, 2)}</pre>
+        `;
+        
+      } catch (error) {
+        console.error('❌ Sign in error:', error);
+        
+        resultDiv.innerHTML = `
+          <div class="result error">
+            ❌ <strong>Sign in failed!</strong><br>
+            Error: ${error.message}<br>
+            ${error.status ? `Status: ${error.status}<br>` : ''}
+            ${error.code ? `Code: ${error.code}` : ''}
+          </div>
+          <pre>${JSON.stringify(error, null, 2)}</pre>
+        `;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Sign In';
+      }
+    };
+    
+    // Monitor network requests
+    const networkLog = document.getElementById('network-log');
+    const originalFetch = window.fetch;
+    
+    window.fetch = async function(...args) {
+      const url = args[0];
+      const options = args[1] || {};
+      
+      if (typeof url === 'string' && url.includes('supabase')) {
+        networkLog.innerHTML += `
+          <div class="result info">
+            📡 <strong>${options.method || 'GET'}</strong> ${url}<br>
+            Time: ${new Date().toLocaleTimeString()}
+          </div>
+        `;
+      }
+      
+      try {
+        const response = await originalFetch.apply(this, args);
+        
+        if (typeof url === 'string' && url.includes('supabase')) {
+          networkLog.innerHTML += `
+            <div class="result ${response.ok ? 'success' : 'error'}">
+              ${response.ok ? '✅' : '❌'} Response: ${response.status} ${response.statusText}
+            </div>
+          `;
+        }
+        
+        return response;
+      } catch (error) {
+        if (typeof url === 'string' && url.includes('supabase')) {
+          networkLog.innerHTML += `
+            <div class="result error">
+              ❌ Network error: ${error.message}
+            </div>
+          `;
+        }
+        throw error;
+      }
+    };
+    
+    // Auto-test connection on load
+    window.addEventListener('load', () => {
+      setTimeout(() => testConnection(), 1000);
+    });
+  </script>
+</body>
+</html>
